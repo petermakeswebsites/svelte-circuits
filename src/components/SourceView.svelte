@@ -3,7 +3,7 @@
 	import DotView from "./DotView.svelte"
 	import DraggerBox from "./DraggerBox.svelte"
 	import Group from "./Group.svelte"
-    let {source} : {source: Source} = $props()
+    let {source, disabled} : {source: Source, disabled? : boolean} = $props()
 </script>
 <Group x={source.position.x} y={source.position.y}>
     <DraggerBox
@@ -15,5 +15,5 @@
         dragPosition={source.position}
         selectable={source.selectable}
     />
-    <DotView dot={source.dot} />
+    <DotView dot={source.dot} {disabled} />
 </Group>

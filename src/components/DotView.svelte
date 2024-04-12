@@ -13,7 +13,7 @@
 			try {
 				State.createWire(
 					this.newLineDrag.from,
-					arr.length ? arr[0] : State.add(new Junction({ x: this.newLineDrag.to.globalX, y: this.newLineDrag.to.globalY })).joint
+					arr.length ? arr[0] : State.add(Templates.junction({ x: this.newLineDrag.to.globalX, y: this.newLineDrag.to.globalY, name: "junc" })).inputs[0]
 				)
 			} catch (e) {
 				console.log('Error creating wire!')
@@ -41,35 +41,42 @@
 	import { Set as StateSet } from 'svelte/reactivity'
 	import Group from './Group.svelte'
 	import State from '$lib/state.svelte'
-	import { Junction } from '$lib/junction.svelte'
-	let { dot }: { dot: Dot } = $props()
+	import { Templates } from '$lib/gates'
+	let { dot, disabled = false }: { dot: Dot; disabled?: boolean } = $props()
 	let hovering = $derived(SenderReceiver.newLineDrag ? dot.position.isWithinDistanceOf(SenderReceiver.newLineDrag.to, 10) : null)
-	$effect(() => {
-		if (hovering) {
-			SenderReceiver.hoveringList.add(dot)
-		} else {
-			SenderReceiver.hoveringList.delete(dot)
-		}
-	})
+
+	if (!disabled)
+		$effect(() => {
+			if (hovering) {
+				SenderReceiver.hoveringList.add(dot)
+			} else {
+				SenderReceiver.hoveringList.delete(dot)
+			}
+		})
 </script>
 
 <Group x={dot.position.x} y={dot.position.y}>
-	<g
-		class:receiving={hovering}
-		use:dragger={{
-			relative(x, y) {
-				const newPosition = dot.position.popToGlobal().move(x, y)
-				SenderReceiver.updateDragPosition(dot, newPosition)
-			},
-			begin() {},
-			end() {
-				SenderReceiver.processSending()
-			}
-		}}
-	>
+	{#if disabled}
 		<circle class="mouse-over" cx={0} cy={0} r="10" fill={'transparent'} fill-opacity={0.2} />
 		<circle class="expander" cx={0} cy={0} r="0" fill={'blue'} fill-opacity={0.2} />
-	</g>
+	{:else}
+		<g
+			class:receiving={hovering}
+			use:dragger={{
+				relative(x, y) {
+					const newPosition = dot.position.popToGlobal().move(x, y)
+					SenderReceiver.updateDragPosition(dot, newPosition)
+				},
+				begin() {},
+				end() {
+					SenderReceiver.processSending()
+				}
+			}}
+		>
+			<circle class="mouse-over" cx={0} cy={0} r="10" fill={'transparent'} fill-opacity={0.2} />
+			<circle class="expander" cx={0} cy={0} r="0" fill={'blue'} fill-opacity={0.2} />
+		</g>
+	{/if}
 	<circle class="show" cx={0} cy={0} r="5" fill={dot.connector.isLive ? 'green' : 'grey'} />
 </Group>
 

@@ -7,22 +7,25 @@
 	import { fade } from 'svelte/transition'
 
 	let {
-		x = 0,
-		y = 0,
+		// x = 0,
+		// y = 0,
 		width = 0,
 		height = 0,
 		dragPosition,
 		selectable,
 		onNonDraggingClick = null
 	}: {
-		x: number
-		y: number
+		// x: number
+		// y: number
 		width: number
 		height: number
 		dragPosition: Position
 		selectable: Selectable
 		onNonDraggingClick?: null | (() => void)
 	} = $props()
+	
+let x = $derived(-width/2)
+let y = $derived(-height/2)
 </script>
 
 <g

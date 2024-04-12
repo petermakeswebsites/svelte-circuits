@@ -3,23 +3,38 @@
 </script>
 
 <script>
+	import { StubDirection } from '$lib/dot.svelte'
+
 	let {
 		x,
 		y,
-		backwards = false,
+		direction = StubDirection.RIGHT,
 		live = false
 	}: {
 		x: number
 		y: number
 		backwards?: boolean
 		live?: boolean
+		direction?: StubDirection
 	} = $props()
+
+console.log(direction)
 </script>
 
-<path d={`M ${x} ${y} l ${backwards ? -stubWidth : stubWidth} 0`} fill="none" stroke={live ? 'green' : 'grey'} stroke-linecap="round" stroke-width="2" />
+{#if direction !== StubDirection.NONE}
+	<path
+		d="M {x} {y} l {stubWidth*Math.cos(direction*Math.PI/180)} {stubWidth*Math.sin(direction*Math.PI/180)}"
+		transform="rotate()"
+		fill="none"
+		stroke={live ? 'green' : 'grey'}
+		stroke-linecap="round"
+		stroke-width="2"
+	/>
+{/if}
 
 <style>
 	path {
 		pointer-events: none;
+		transform-origin: left;
 	}
 </style>

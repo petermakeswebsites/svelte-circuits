@@ -6,7 +6,7 @@
 	import Path from "./Path.svelte"
 	import StubbyLine from "./StubbyLine.svelte"
 
-    let {switcher} : {switcher: Switcher} = $props()
+    let {switcher, disabled = false} : {switcher: Switcher, disabled? : boolean} = $props()
 </script>
 
 <Group x={switcher.position.x} y={switcher.position.y}>
@@ -31,8 +31,8 @@
     </g>
     <StubbyLine live={switcher.from.connector.isLive} x={-5} y={10} />
     <StubbyLine live={switcher.to.connector.isLive} x={15} y={10} />
-    <DotView dot={switcher.from} />
-    <DotView dot={switcher.to} />
+    <DotView dot={switcher.from} {disabled} />
+    <DotView dot={switcher.to} {disabled} />
 </Group>
 
 <style>

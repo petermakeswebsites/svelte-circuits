@@ -21,10 +21,10 @@ export class TwoInOneOut {
 	})
 
 	constructor({ x = 0, y = 0, name = '', calculation }: { x: number; y: number; name: string; calculation: () => boolean }) {
+		this.output.connector.getEmitting = calculation
 		this.name = name
 		this.position.x = x
 		this.position.y = y
-		this.output.connector.emittingFn = calculation
 	}
 
 	destroy() {

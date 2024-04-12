@@ -28,7 +28,7 @@ class Cluster {
 	connections = new StateSet<Connector>()
 	isLive = $derived.by(() => {
 		for (const connection of this.connections) {
-			if (connection.emitting) return true
+			if (connection.getEmitting()) return true
 		}
 		return false
 	})
@@ -39,32 +39,23 @@ export class Connector {
 	readonly connections = new StateSet<Connector>()
 	readonly immutableConnections = new StateSet<Connector>()
 	// #immediateNeighbors = $derived(new StateSet([...this.connections, ...this.immutableConnections]))
-	// cluster = $derived.by(() => {
-	// 	const allInCluster = this._getAllInClusterExcept(new Set([this]))
-	// 	return allInCluster
-	// })
 
 	// This works
-	// isLive = $derived.by(() => {
-	// 	const cluster = Clusters.map.get(this)
-	// 	if (!cluster) throw new Error('Cluster not  found!')
-	// 	return cluster.isLive
-	// })
-
-	// These don't work
-	cluster = $derived.by(() => {
+	isLive = $derived.by(() => {
 		const cluster = Clusters.map.get(this)
 		if (!cluster) throw new Error('Cluster not  found!')
-		return cluster
+		return cluster.isLive
 	})
-	isLive = $derived.by(() => {
-		untrack(() => {
-			if (this.name == 'output connector') {
-				console.log('clustah', this.cluster)
-			}
-		})
-		return this.cluster.isLive
-	})
+
+	// These don't work
+	// cluster = $derived.by(() => {
+	// 	const cluster = Clusters.map.get(this)
+	// 	if (!cluster) throw new Error('Cluster not  found!')
+	// 	return cluster
+	// })
+	// isLive = $derived.by(() => {
+	// 	return this.cluster.isLive
+	// })
 
 	isConnectedTo = $derived((connector: Connector) => this.connections.has(connector) || this.immutableConnections.has(connector))
 
@@ -74,40 +65,17 @@ export class Connector {
 		emitting = () => false
 	}: { name?: string; immutableConnections?: Connector[]; emitting?: () => boolean } = {}) {
 		this.name = name
+		this.getEmitting = emitting
+
 		immutableConnections.forEach((connector) => {
 			this.immutableConnections.add(connector)
 			connector.immutableConnections.add(this)
 		})
 
-		this.emittingFn = emitting
 		globalConnectorList.add(this)
 	}
 
-	emittingFn = $state<() => boolean>(() => false)
-	emitting = $derived.by(() => {
-		return this.emittingFn()
-	})
-
-	// /**
-	//  *
-	//  * @param alreadyChecked History of already checked, should contain the one in which is being called as well
-	//  * @returns
-	//  */
-	// _getAllInClusterExcept(alreadyChecked: Set<Connector>): Set<Connector> {
-	// 	// console.group(this.name)
-	// 	const nextCheck = subtract(this.#immediateNeighbors, alreadyChecked)
-	// 	const upToNow = add(this.#immediateNeighbors, alreadyChecked)
-
-	// 	nextCheck.forEach((connector) => {
-	// 		connector._getAllInClusterExcept(upToNow).forEach((d) => upToNow.add(d))
-	// 	})
-	// 	// console.groupEnd()
-	// 	return upToNow
-	// }
-
-	//
-	// HANDLING CONNECTIONS
-	//
+	getEmitting = $state<() => boolean>(() => false)
 
 	connectTo(e: Connector) {
 		if (this.connections.has(e)) throw new Error('Tried to connect to something that was already connected')
@@ -136,17 +104,13 @@ export class Connector {
 
 function findClusters(connectorList: StateSet<Connector>): StateSet<Cluster> {
 	let clusters = new StateSet<Cluster>()
-	// let connectorToClusterMap = new StateMap<Connector, Cluster>()
 	let visited = new Set<Connector>()
-	// return untrack(() => {
 
-	// Helper function for depth-first search
 	function dfs(connector: Connector, currentCluster: Cluster) {
 		visited.add(connector)
 
 		untrack(() => {
 			currentCluster.connections.add(connector)
-			// connectorToClusterMap.set(connector, currentCluster)
 		})
 
 		for (const neighbour of connector.connections) {
@@ -170,5 +134,4 @@ function findClusters(connectorList: StateSet<Connector>): StateSet<Cluster> {
 	}
 
 	return clusters
-	// })
 }

@@ -7,8 +7,9 @@ import type { Dot } from './dot.svelte'
 import type { TwoInOneOut } from './primitives.svelte'
 import type { Or } from './or.svelte'
 import type { And } from './and.svelte'
+import type { Gate } from './gate.svelte'
 
-export type Piece = Source | Wire | Junction | Switcher | TwoInOneOut | And 
+export type Piece = Source | Wire | Junction | Switcher | TwoInOneOut | And | Gate<any, any>
 const State = new (class {
 	wires = new StateSet<Wire>()
 	pieces = new StateSet<Piece>()

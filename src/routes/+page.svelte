@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { And } from '$lib/and.svelte'
 	import { Junction } from '$lib/junction.svelte'
 	import { Or } from '$lib/or.svelte'
@@ -15,14 +15,25 @@
 	import SourceView from '../components/SourceView.svelte'
 	import SwitcherView from '../components/SwitcherView.svelte'
 	import WireView from '../components/WireView.svelte'
-    import '$lib/create-start'
+	import '$lib/create-start'
 	import { Clusters, globalConnectorList } from '$lib/connector.svelte'
+	import ContextMenu from '../components/ContextMenu.svelte'
+	import PieceSelector from '../components/PieceSelector.svelte'
+
+	let contextMenuAt: null | { x: number; y: number } = $state(null)
 
 	// $inspect(globalConnectorList, "dots")
-	$inspect(Clusters.map, "cluster list update!")
+	$inspect(Clusters.map, 'cluster list update!')
 </script>
 
-<svg width="100%" height="100%">
+<svg
+	width="100%"
+	height="100%"
+	on:contextmenu={(evt) => {
+		evt.preventDefault()
+		contextMenuAt = { x: evt.clientX, y: evt.clientY }
+	}}
+>
 	<defs>
 		<pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
 			<path d="M 10 0 L 0 0 0 10" fill="none" stroke="#0002" stroke-width="0.5" />
@@ -53,16 +64,8 @@
 	{/each}
 	<!-- <Dot /> -->
 	{#each State.pieces as item (item)}
-		{#if item instanceof Junction}
-			<JunctionView junction={item} />
-		{:else if item instanceof Switcher}
-			<SwitcherView switcher={item} />
-		{:else if item instanceof Source}
-			<SourceView source={item} />
-		{:else if item instanceof And}
-			<AndView and={item} />
-		{:else if item instanceof Or}
-			<OrView or={item} />
-		{/if}
+		<PieceSelector {item} />
 	{/each}
+
+	<ContextMenu bind:contextMenuAt />
 </svg>
