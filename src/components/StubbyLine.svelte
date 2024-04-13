@@ -18,7 +18,6 @@
 		direction?: StubDirection
 	} = $props()
 
-console.log(direction)
 </script>
 
 {#if direction !== StubDirection.NONE}

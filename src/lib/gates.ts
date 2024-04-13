@@ -42,6 +42,7 @@ const AndPath = 'M -20 -15 l 25 0 c 20 0 20 30 0 30 l -25 0 l 0 -30'
 const OrPath = 'M -23 -15 l 14 0 c 21 0 28 15 28 15 c 0 0 -7 15 -28 15 l -14 0 c 7 -8 7 -22 0 -30'
 const OrCurve =  'M -27 15 c 7 -8 7 -22 0 -30'
 const not = (x : number = 20,y : number = 0) => `M ${x} ${y} a 1 1 0 0 0 10 0 a 1 1 0 0 0 -10 0`
+const buffer = 'M -20 0 l 0 15 l 30 -15 l -30 -15 l 0 15'
 
 export const Templates = {
     and: generateTwoInOneOut("and", [AndPath], {
@@ -105,6 +106,31 @@ export const Templates = {
             }
         }
     }, 10),
+    buffer: createGateMaker({
+        template: "buffer",
+        box: {
+            width: 80,
+            height: 50
+        },
+        inputs: [
+            {
+                name: 'input',
+                stub: StubDirection.RIGHT,
+                x: -30,
+                y: 0
+            }
+        ] as const,
+        outputs: [
+            {
+                name: 'output',
+                stub: StubDirection.LEFT,
+                x: 20,
+                y: 0,
+                emittingFn: 0
+            }
+        ] as const,
+        paths: [buffer]
+    }),
     not: createGateMaker({
         template: "not",
         box: {
@@ -131,7 +157,7 @@ export const Templates = {
                 }
             }
         ] as const,
-        paths: ['M -20 0 l 0 15 l 30 -15 l -30 -15 l 0 15', not(10,0)]
+        paths: [buffer, not(10,0)]
     }),
     junction: createGateMaker({
         template: "junction",
@@ -148,6 +174,22 @@ export const Templates = {
                 y: 0,
             }
         ] as const,
+        paths: []
+    }),
+    source: createGateMaker({
+        template: "junction",
+        box: {
+            height: 40,
+            width: 40
+        },
+        outputs: [{
+            name: "source",
+            x: 0,
+            y: 0,
+            stub: StubDirection.NONE,
+            emittingFn: true
+        }] as const,
+        inputs: [] as const,
         paths: []
     })
 }

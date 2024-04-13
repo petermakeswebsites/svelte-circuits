@@ -23,7 +23,7 @@
 		updateDragPosition(from: Dot, to: Position) {
 			this.newLineDrag = {
 				from,
-				to: to.copy.snapTo(10)
+				to: to.copy.snapTo().position
 			}
 		}
 
@@ -77,7 +77,7 @@
 			<circle class="expander" cx={0} cy={0} r="0" fill={'blue'} fill-opacity={0.2} />
 		</g>
 	{/if}
-	<circle class="show" cx={0} cy={0} r="5" fill={dot.connector.isLive ? 'green' : 'grey'} />
+	<circle class="show" cx={0} cy={0} r="5" fill={dot.connector.isLive && !disabled ? 'green' : 'grey'} />
 </Group>
 
 <style>

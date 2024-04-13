@@ -9,7 +9,7 @@ type FnList<T> = {
 	relative?: (rx: number, ry: number) => void
 	abs?: T extends undefined ? (ax: number, ay: number) => void : (ax: number, ay: number, extra: T) => void
 	dragcb?: (dragging: boolean) => void
-	end?: () => void
+	end?: (x : number, y : number) => void
 	/**
 	 * Non-dragging tap
 	 * @returns
@@ -74,7 +74,7 @@ export function dragger<T>(element: SVGElement, { begin, delta, relative, abs, d
 		}
 		isDown = false
 		beginReset = true
-		if (end) end()
+		if (end) end(evt.x, evt.y)
 
 		dragging = false
 		dragcb?.(false)

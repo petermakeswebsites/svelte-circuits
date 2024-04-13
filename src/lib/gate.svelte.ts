@@ -1,7 +1,9 @@
 import { Dot, StubDirection } from './dot.svelte'
 import { createEvaluation, type Evaluation } from './gate-formula'
 import { Position } from './position.svelte'
-import { Selectable } from './selectable.svelte'
+import { every } from './rune-every'
+import { Draggable, Selectable } from './selectable.svelte'
+import State from './state.svelte'
 import { lengthMap, type TupleType, type NumericRange } from './type-helpers'
 
 export type GateConstructor<T extends number, R extends number> = {
@@ -10,6 +12,7 @@ export type GateConstructor<T extends number, R extends number> = {
 	name: string
 	paths: string[]
 	box: BoundingBox
+	dummy: boolean
 	template?: string
 	inputs: TupleType<
 		T,
@@ -43,6 +46,7 @@ export class Gate<T extends number, R extends number> {
 		return this.outputs[num]
 	}
 
+	readonly dummy
 	box: BoundingBox
 	position: Position
 	name: string
@@ -53,11 +57,11 @@ export class Gate<T extends number, R extends number> {
 		} else {
 			this.template = gate
 		}
-
+		this.dummy = gate.dummy
 		this.name = gate.name
 		this.position = new Position(gate.x, gate.y)
 		this.box = gate.box
-		this.inputs = lengthMap(gate.inputs, ({ name, x, y, stub }) => new Dot({ name, x, y, stub, parent: this.position }))
+		this.inputs = lengthMap(gate.inputs, ({ name, x, y, stub }) => new Dot({ name, x, y, stub, parent: this }))
 		this.outputs = lengthMap(
 			gate.outputs,
 			({ x, y, name, emitter, stub }) =>
@@ -65,26 +69,39 @@ export class Gate<T extends number, R extends number> {
 					x,
 					y,
 					name,
-					parent: this.position,
+					parent: this,
 					stub,
 					emitting: () => {
-						return emitter(...lengthMap(this.inputs, (dot) => dot.connector.isLive))
+						return emitter(...lengthMap(this.inputs, (dot) => !!dot.connector.isLive))
 					}
 				})
 		)
 		this.paths = gate.paths
+
+		this.selectable = new Draggable(
+			{
+				delete: () => {
+					State.destroy(this)
+				}
+			},
+			this.position,
+			this
+		)
 	}
 
 	get dots() {
 		return [...this.inputs, ...this.outputs]
 	}
 
+	bodyLive = $derived(every(this.outputs, (output) => output.connector.isEmitting))
+
 	readonly paths: string[]
 
-	readonly selectable = new Selectable()
+	readonly selectable
 	destroy() {
-		this.inputs!.forEach((dot) => dot.destroy())
-		this.outputs!.forEach((dot) => dot.destroy())
+		for (const dot of this.dots) {
+			dot.destroy()
+		}
 	}
 }
 
@@ -116,7 +133,7 @@ export type GateSerialised<T extends number, R extends number> = {
 
 export function createGateMaker<T extends number, R extends number>(
 	serialised: GateSerialised<T, R>
-): (settings: { x: number; y: number; name: string }) => Gate<T, R> {
+): (settings: { x: number; y: number; name: string; dummy?: boolean }) => Gate<T, R> {
 	const inputs = lengthMap(serialised.inputs, (input) => ({
 		name: input.name,
 		x: input.x,
@@ -135,7 +152,7 @@ export function createGateMaker<T extends number, R extends number>(
 	const paths = serialised.paths
 	const box = serialised.box || { x: 0, y: 0, width: 50, height: 50 }
 
-	return ({ x, y, name }: { x: number; y: number; name: string }) => {
+	return ({ x, y, name, dummy = false }: { x: number; y: number; name: string; dummy?: boolean }) => {
 		const gateConstructor: GateConstructor<T, R> = {
 			inputs,
 			outputs,
@@ -144,7 +161,8 @@ export function createGateMaker<T extends number, R extends number>(
 			x,
 			y,
 			box,
-			template: serialised.template
+			template: serialised.template,
+			dummy
 		}
 		return new Gate(gateConstructor)
 	}

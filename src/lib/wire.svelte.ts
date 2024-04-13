@@ -29,8 +29,13 @@ export class Wire {
 		}
 	})
 
-	isConnectedTo(dot: Dot) {
-		return this.from == dot || this.to == dot
+	/**
+	 * Is this wire connected to the dot in question?
+	 * @param dot 
+	 * @returns null if nothing, or {@link Dot} of the other end
+	 */
+	isConnectedTo(dot: Dot) : Dot | null{
+		return this.from == dot ? this.to : this.to == dot ? this.from : null
 	}
 
 	destroy() {

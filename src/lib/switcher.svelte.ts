@@ -1,50 +1,54 @@
-import { Dot } from "./dot.svelte";
-import { Position } from "./position.svelte";
-import { Selectable } from "./selectable.svelte";
-import State from "./state.svelte";
+import { Dot } from './dot.svelte'
+import { Position } from './position.svelte'
+import { Draggable, Selectable } from './selectable.svelte'
+import State from './state.svelte'
 
 export class Switcher {
-    name = ""
-    position = new Position(0,0)
-    from = new Dot({name: "switcher from", x: -10, y: 10, parent: this.position})
-    to = new Dot({name: "switcher to", x: 30, y: 10, parent: this.position})
-    
-    #open = $state(true)
-    get open() {
-        return this.#open
-    }
+	name = ''
+	position = new Position(0, 0)
+	from = new Dot({ name: 'switcher from', x: -10, y: 10, parent: this.position })
+	to = new Dot({ name: 'switcher to', x: 30, y: 10, parent: this.position })
 
-    set open(shouldOpen) {
-        if (shouldOpen) {
-            this.from.connector.disconnectFrom(this.to.connector)
-        } else {
-            this.from.connector.connectTo(this.to.connector)
-        }
-        this.#open = shouldOpen
-    }
+	#open = $state(true)
+	get open() {
+		return this.#open
+	}
 
-    toggle() {
-        this.open = !this.#open
-    }
+	set open(shouldOpen) {
+		if (shouldOpen) {
+			this.from.connector.disconnectFrom(this.to.connector)
+		} else {
+			this.from.connector.connectTo(this.to.connector)
+		}
+		this.#open = shouldOpen
+	}
 
-    readonly selectable = new Selectable({
-        delete: () => {
-            State.destroy(this)
-        }
-    })
+	toggle() {
+		this.open = !this.#open
+	}
 
-    constructor({x = 0, y = 0, name = ""}) {
-        this.position.x = x
-        this.position.y = y
-        this.name = name
-    }
+	readonly selectable
 
-    get dots() {
-        return [this.from, this.to]
-    }
+	constructor({ x = 0, y = 0, name = '' }) {
+		this.position.x = x
+		this.position.y = y
+		this.name = name
+		this.selectable = new Draggable(
+			{
+				delete: () => {
+					State.destroy(this)
+				}
+			},
+			this.position, this
+		)
+	}
 
-    destroy() {
-        this.from.destroy()
-        this.to.destroy()
-    }
+	get dots() {
+		return [this.from, this.to]
+	}
+
+	destroy() {
+		this.from.destroy()
+		this.to.destroy()
+	}
 }

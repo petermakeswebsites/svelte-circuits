@@ -16,8 +16,6 @@
             switcher.toggle()
         }}
         dragPosition={switcher.position}
-        x={-25}
-        y={-10}
         width={70}
         height={40}
     />

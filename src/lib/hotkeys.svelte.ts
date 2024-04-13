@@ -5,6 +5,9 @@ export const Hotkeys = new (class {
     currentlyDown = new StateSet<KeyboardEvent["key"]>()
 
     shiftKeyDown = $derived(this.currentlyDown.has("Shift"))
+    metaKeyDown = $derived(this.currentlyDown.has("Meta"))
+    ctrlKeyDown = $derived(this.currentlyDown.has("Control"))
+    
 
     constructor() {
         globalThis.addEventListener("keydown", (evt) => {

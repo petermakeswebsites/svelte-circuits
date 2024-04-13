@@ -2,11 +2,10 @@
 	import { accessible } from '$lib/accessible-action'
 	import { dragger } from '$lib/dragger.svelte'
 	import { focuslink } from '$lib/focus-link'
-	import { Junction } from '$lib/junction.svelte'
 	import State from '$lib/state.svelte'
 	import type { Wire } from '$lib/wire.svelte'
-	import { unstate } from 'svelte'
 	import Path from './Path.svelte'
+	import { Templates } from '$lib/gates'
 	let { wire }: { wire: Wire } = $props()
 	const drawPath = $derived(
 		`M ${wire.from?.position.globalX} ${wire.from?.position.globalY} L ${wire.to?.position.globalX} ${wire.to?.position.globalY}`
@@ -24,9 +23,9 @@
 		begin: (x, y, ele) => {
 			if (wire.from && wire.to) {
 				console.log('begin')
-				const j = State.add(new Junction({ x, y, name: 'new junc' }))
-				State.createWire(wire.from, j.joint, 'new 1')
-				State.createWire(j.joint, wire.to, 'new 2')
+				const j = State.add(Templates.junction({ x, y, name: 'new junc' }))
+				State.createWire(wire.from, j.getInput(0), 'new 1')
+				State.createWire(j.getInput(0), wire.to, 'new 2')
 				hide = true
 				return {
 					extra: j.position
@@ -36,7 +35,7 @@
 		abs: (x, y, position) => {
 			position.x = x
 			position.y = y
-			position.snapTo(10)
+			position.snapTo()
 		},
 		end: () => {
 			State.destroy(wire) // self-destruct this component

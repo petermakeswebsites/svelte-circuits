@@ -1,29 +1,29 @@
 <script lang="ts">
-	import { And } from '$lib/and.svelte'
-	import { Junction } from '$lib/junction.svelte'
-	import { Or } from '$lib/or.svelte'
-	import { selectedList } from '$lib/selectable.svelte'
-	import { Source } from '$lib/source.svelte'
+	import { Selected } from '$lib/selectable.svelte'
 	import State from '$lib/state.svelte'
 	import { Switcher } from '$lib/switcher.svelte'
 	import { Wire } from '$lib/wire.svelte'
-	import AndView from '../components/AndView.svelte'
 	import { SenderReceiver } from '../components/DotView.svelte'
-	import JunctionView from '../components/JunctionView.svelte'
-	import OrView from '../components/OrView.svelte'
 	import Path from '../components/Path.svelte'
-	import SourceView from '../components/SourceView.svelte'
 	import SwitcherView from '../components/SwitcherView.svelte'
 	import WireView from '../components/WireView.svelte'
 	import '$lib/create-start'
 	import { Clusters, globalConnectorList } from '$lib/connector.svelte'
 	import ContextMenu from '../components/ContextMenu.svelte'
-	import PieceSelector from '../components/PieceSelector.svelte'
+	import GateView from '../components/GateView.svelte'
+	import { Gate } from '$lib/gate.svelte'
+	import '$lib/pulse.svelte'
+	import PlayPauseReset from '../components/PlayPauseReset.svelte'
+	import "$lib/copy-paste"
+	import Backdrop from '../components/Backdrop.svelte'
+	import { Hotkeys } from '$lib/hotkeys.svelte'
 
 	let contextMenuAt: null | { x: number; y: number } = $state(null)
 
+	// $inspect(Hotkeys.currentlyDown)
+
 	// $inspect(globalConnectorList, "dots")
-	$inspect(Clusters.map, 'cluster list update!')
+	// $inspect(Clusters.map, 'cluster list update!')
 </script>
 
 <svg
@@ -33,6 +33,7 @@
 		evt.preventDefault()
 		contextMenuAt = { x: evt.clientX, y: evt.clientY }
 	}}
+	role="presentation"
 >
 	<defs>
 		<pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -45,8 +46,7 @@
 	</defs>
 
 	<rect width="100%" height="100%" fill="url(#grid)" />
-
-	<rect x={0} y={0} width="100%" height="100%" on:pointerup={() => selectedList.clear()} fill="transparent" />
+	<Backdrop />
 	{#if SenderReceiver.newLineDrag}
 		<g>
 			<Path
@@ -64,8 +64,13 @@
 	{/each}
 	<!-- <Dot /> -->
 	{#each State.pieces as item (item)}
-		<PieceSelector {item} />
+		{#if item instanceof Gate}
+			<GateView gate={item} />
+		{:else if item instanceof Switcher}
+			<SwitcherView switcher={item} />
+		{/if}
 	{/each}
 
 	<ContextMenu bind:contextMenuAt />
 </svg>
+<PlayPauseReset />
