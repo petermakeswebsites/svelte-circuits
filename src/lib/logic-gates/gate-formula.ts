@@ -1,4 +1,4 @@
-import type { NumericRange, TupleType } from './type-helpers'
+import type { NumericRange, TupleType } from '../utils/type-helpers'
 
 type BooleanTuple<T extends number> = TupleType<T, boolean>
 

@@ -1,13 +1,13 @@
-import { Dot } from './dot.svelte'
-import { Position } from './position.svelte'
-import { Draggable, Selectable } from './selectable.svelte'
-import State from './state.svelte'
+import { Dot } from "$lib/connections/dot.svelte"
+import { Position } from "$lib/position/position.svelte"
+import { Draggable } from "$lib/selecting/selectable.svelte"
+import State from "$lib/state/state.svelte"
 
 export class Switcher {
 	name = ''
 	position = new Position(0, 0)
-	from = new Dot({ name: 'switcher from', x: -10, y: 10, parent: this.position })
-	to = new Dot({ name: 'switcher to', x: 30, y: 10, parent: this.position })
+	from = new Dot({ name: 'switcher from', x: -10, y: 10, parent: this })
+	to = new Dot({ name: 'switcher to', x: 30, y: 10, parent: this })
 
 	#open = $state(true)
 	get open() {
@@ -15,6 +15,7 @@ export class Switcher {
 	}
 
 	set open(shouldOpen) {
+		throw new Error("TODO")
 		if (shouldOpen) {
 			this.from.connector.disconnectFrom(this.to.connector)
 		} else {

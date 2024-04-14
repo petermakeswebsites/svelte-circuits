@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Clusters } from '$lib/connector.svelte'
-	import { Playback } from '$lib/pulse.svelte'
+	import { Clusters } from '$lib/connections/clusters.svelte'
+	import { Playback } from '$lib/state/pulse.svelte'
 </script>
 
 <div>

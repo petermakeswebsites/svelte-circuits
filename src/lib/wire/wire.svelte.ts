@@ -1,12 +1,11 @@
-import type { Connector } from './connector.svelte'
-import { Dot } from './dot.svelte'
-import { Selectable } from './selectable.svelte'
-import State from './state.svelte'
+import type { Dot } from '$lib/connections/dot.svelte'
+import { Selectable } from '$lib/selecting/selectable.svelte'
+import State from '$lib/state/state.svelte'
 
 export class Wire {
 	name: string
-	from = $state<Dot | null>(null)
-	to = $state<Dot | null>(null)
+	from = $state<Dot>()!
+	to = $state<Dot>()!
 	/**
 	 *
 	 * @throws
@@ -18,7 +17,6 @@ export class Wire {
 		if (from.connector.isConnectedTo(to.connector)) {
 			throw new Error('Wire is already connected!')
 		}
-		from.connector.connectTo(to.connector)
 	}
 
 	bodyLive = $derived(this.from?.connector.isLive && this.to?.connector.isLive)
@@ -31,15 +29,10 @@ export class Wire {
 
 	/**
 	 * Is this wire connected to the dot in question?
-	 * @param dot 
+	 * @param dot
 	 * @returns null if nothing, or {@link Dot} of the other end
 	 */
-	isConnectedTo(dot: Dot) : Dot | null{
+	isConnectedTo(dot: Dot): Dot | null {
 		return this.from == dot ? this.to : this.to == dot ? this.from : null
-	}
-
-	destroy() {
-		console.log('Disconnecting from wire:', this.from?.name, this.to?.name)
-		if (this.to) this.from?.connector.disconnectFrom(this.to.connector)
 	}
 }

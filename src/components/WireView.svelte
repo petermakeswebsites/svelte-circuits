@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { accessible } from '$lib/accessible-action'
-	import { dragger } from '$lib/dragger.svelte'
-	import { focuslink } from '$lib/focus-link'
-	import State from '$lib/state.svelte'
-	import type { Wire } from '$lib/wire.svelte'
+	import { accessible } from '$lib/utils/accessible-action'
+	import { dragger } from '$lib/selecting/dragger.svelte'
+	import type { Wire } from '$lib/wire/wire.svelte'
 	import Path from './Path.svelte'
-	import { Templates } from '$lib/gates'
+	import { Templates } from '$lib/logic-gates/templates'
+	import { Gate } from '$lib/logic-gates/gate.svelte'
+	import State from '$lib/state/state.svelte'
+	import { focuslink } from '$lib/utils/focus-link'
 	let { wire }: { wire: Wire } = $props()
 	const drawPath = $derived(
 		`M ${wire.from?.position.globalX} ${wire.from?.position.globalY} L ${wire.to?.position.globalX} ${wire.to?.position.globalY}`
@@ -23,7 +24,7 @@
 		begin: (x, y, ele) => {
 			if (wire.from && wire.to) {
 				console.log('begin')
-				const j = State.add(Templates.junction({ x, y, name: 'new junc' }))
+				const j = State.add(new Gate(Templates.junction({ x, y, name: 'new junc' })))
 				State.createWire(wire.from, j.getInput(0), 'new 1')
 				State.createWire(j.getInput(0), wire.to, 'new 2')
 				hide = true
@@ -46,7 +47,7 @@
 >
 	<path class="display-selection" d={drawPath} stroke-linecap="round" stroke-linejoin="round" />
 
-	<Path live={wire.bodyLive} path={drawPath} />
+	<Path live={!!wire.bodyLive} path={drawPath} />
 	<path d={drawPath} stroke="transparent" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
 </g>
 

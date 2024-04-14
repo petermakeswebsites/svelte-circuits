@@ -1,0 +1,1 @@
+export const stubWidth = 10

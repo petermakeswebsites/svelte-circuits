@@ -1,6 +1,5 @@
 import { tick } from 'svelte'
-import { Cluster, Clusters } from './connector.svelte'
-import State from './state.svelte'
+import type { Cluster } from '../connections/clusters.svelte'
 
 export const EmittanceSuppressor = new (class {
 	suppressed = $state(false)

@@ -1,10 +1,10 @@
-import { Dot, StubDirection } from './dot.svelte'
-import { createEvaluation, type Evaluation } from './gate-formula'
-import { Position } from './position.svelte'
-import { every } from './rune-every'
-import { Draggable, Selectable } from './selectable.svelte'
-import State from './state.svelte'
-import { lengthMap, type TupleType, type NumericRange } from './type-helpers'
+import { StubDirection, Dot } from "$lib/connections/dot.svelte"
+import { Position } from "$lib/position/position.svelte"
+import { Draggable } from "$lib/selecting/selectable.svelte"
+import State from "$lib/state/state.svelte"
+import { every } from "$lib/utils/rune-every"
+import { type TupleType, lengthMap, type NumericRange } from "$lib/utils/type-helpers"
+import { type Evaluation, createEvaluation } from "./gate-formula"
 
 export type GateConstructor<T extends number, R extends number> = {
 	x: number
@@ -131,9 +131,9 @@ export type GateSerialised<T extends number, R extends number> = {
 	template?: string
 }
 
-export function createGateMaker<T extends number, R extends number>(
+export function createGateTemplateMaker<T extends number, R extends number>(
 	serialised: GateSerialised<T, R>
-): (settings: { x: number; y: number; name: string; dummy?: boolean }) => Gate<T, R> {
+): (settings: { x: number; y: number; name: string; dummy?: boolean }) => GateConstructor<T, R> {
 	const inputs = lengthMap(serialised.inputs, (input) => ({
 		name: input.name,
 		x: input.x,
@@ -164,6 +164,6 @@ export function createGateMaker<T extends number, R extends number>(
 			template: serialised.template,
 			dummy
 		}
-		return new Gate(gateConstructor)
+		return gateConstructor
 	}
 }

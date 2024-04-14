@@ -1,15 +1,16 @@
 <script lang="ts">
-	import { Gate } from '$lib/gate.svelte'
-	import { Templates } from '$lib/gates'
-	import { Position } from '$lib/position.svelte'
-	import { Switcher } from '$lib/switcher.svelte'
+	import { Gate, type GateConstructor } from '$lib/logic-gates/gate.svelte'
+	import { Templates } from '$lib/logic-gates/templates'
+	import { Position } from '$lib/position/position.svelte'
+	import { Switcher } from '$lib/logic-gates/switcher.svelte'
 	import { untrack } from 'svelte'
 	import GateView from './GateView.svelte'
 	import Group from './Group.svelte'
 	import SwitcherView from './SwitcherView.svelte'
-	import State from '$lib/state.svelte'
-	import { gridspace } from '$lib/grid'
-	import { Selected } from '$lib/selectable.svelte'
+	import State from '$lib/state/state.svelte'
+	import { gridspace } from '$lib/constants/grid'
+	import { Selected } from '$lib/selecting/selectable.svelte'
+	import GateTemplateView from './GateTemplateView.svelte'
 	let { contextMenuAt = $bindable() }: { contextMenuAt: null | { x: number; y: number } } = $props()
 
 	const radius = 100
@@ -29,9 +30,10 @@
 							dummy: true
 						}),
 						create: (position: Position) => {
-							const newbie = State.add(entry({ x: position.x, y: position.y, name: 'dragged' }))
+							const newbie = State.add(new Gate(entry({ x: position.x, y: position.y, name: 'dragged' }) as GateConstructor<any, any>))
 							Selected.clear()
 							Selected.select(newbie.selectable)
+							Selected.beginMove(position.x, position.y)
 							contextMenuAt = null
 						}
 					}
@@ -48,7 +50,7 @@
 	<circle cx={contextMenuAt.x} cy={contextMenuAt.y} r={150} fill="#fff"></circle>
 	{#each display as entry}
 		<Group>
-			<GateView gate={entry.rendered} onDrop={entry.create} />
+			<GateTemplateView gateConstructor={entry.rendered} onDrop={entry.create} />
 		</Group>
 	{/each}
 {/if}

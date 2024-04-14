@@ -1,18 +1,15 @@
-<script lang="ts" context="module">
-	export const stubWidth = 10
-</script>
-
-<script>
-	import { StubDirection } from '$lib/dot.svelte'
+<script lang="ts">
+	import { StubDirection } from '$lib/connections/dot.svelte'
+	import { stubWidth } from '$lib/constants/stub-width'
 
 	let {
-		x,
-		y,
+		x =0,
+		y =0,
 		direction = StubDirection.RIGHT,
 		live = false
 	}: {
-		x: number
-		y: number
+		x?: number
+		y?: number
 		backwards?: boolean
 		live?: boolean
 		direction?: StubDirection

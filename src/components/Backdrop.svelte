@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { dragger } from '$lib/dragger.svelte'
-	import { Selected, SelectionBox } from '$lib/selectable.svelte'
+	import { dragger } from '$lib/selecting/dragger.svelte'
+	import { Selected, SelectionBox } from '$lib/selecting/selectable.svelte'
     
 </script>
 
@@ -22,11 +22,11 @@
 	use:dragger={{
         begin: (x,y) => {
             console.log("Clearing list!")
-            Selected.list.clear()
+            Selected.clear()
             SelectionBox.set(x,y, 0, 0)
         },
-        relative: (w,h) => {
-            SelectionBox.setSize(w,h)
+        abs: (x,y) => {
+            SelectionBox.setSize(x,y)
         },
         end: () => {
             SelectionBox.transfer()

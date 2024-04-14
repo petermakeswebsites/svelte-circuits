@@ -1,11 +1,11 @@
-import { StubDirection } from './dot.svelte'
-import { createGateMaker } from './gate.svelte'
-import { FormulaOperation, type Evaluation } from './gate-formula'
 
+import { StubDirection } from '$lib/connections/dot.svelte'
+import { FormulaOperation, type Evaluation } from './gate-formula'
+import { createGateTemplateMaker } from './gate.svelte'
 
 
 function generateTwoInOneOut(template: string, paths: string[], emittingFn: Evaluation<2>, shiftOutput = 0) {
-	return createGateMaker({
+	return createGateTemplateMaker({
         template,
 		box: {
 			width: 80,
@@ -106,7 +106,7 @@ export const Templates = {
             }
         }
     }, 10),
-    buffer: createGateMaker({
+    buffer: createGateTemplateMaker({
         template: "buffer",
         box: {
             width: 80,
@@ -131,7 +131,7 @@ export const Templates = {
         ] as const,
         paths: [buffer]
     }),
-    not: createGateMaker({
+    not: createGateTemplateMaker({
         template: "not",
         box: {
             width: 80,
@@ -159,7 +159,7 @@ export const Templates = {
         ] as const,
         paths: [buffer, not(10,0)]
     }),
-    junction: createGateMaker({
+    junction: createGateTemplateMaker({
         template: "junction",
         box: {
             height: 40,
@@ -176,7 +176,7 @@ export const Templates = {
         ] as const,
         paths: []
     }),
-    source: createGateMaker({
+    source: createGateTemplateMaker({
         template: "junction",
         box: {
             height: 40,

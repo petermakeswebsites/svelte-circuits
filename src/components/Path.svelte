@@ -1,11 +1,5 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte'
-
-	let {
-		path,
-		live = false,
-		strokeOverride = null,
-	}: { path: string; live?: Boolean; strokeOverride?: null | boolean } = $props()
+	let { path, live = false, strokeOverride = null }: { path: string; live?: Boolean; strokeOverride?: null | boolean } = $props()
 
 	let stroke = $derived((strokeOverride ? strokeOverride : live) ? 'green' : 'grey')
 </script>

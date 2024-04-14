@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { dragger } from '$lib/dragger.svelte'
-	import { focuslink } from '$lib/focus-link'
-	import { Hotkeys } from '$lib/hotkeys.svelte'
-	import { Position } from '$lib/position.svelte'
-	import { Draggable, Selectable, Selected } from '$lib/selectable.svelte'
+	import { dragger } from '$lib/selecting/dragger.svelte'
+	import { focuslink } from '$lib/utils/focus-link'
+	import { Hotkeys } from '$lib/utils/hotkeys.svelte'
+	import { Position } from '$lib/position/position.svelte'
+	import { Draggable, Selectable, Selected } from '$lib/selecting/selectable.svelte'
 	import { fade } from 'svelte/transition'
 
 	let {
-		// x = 0,
-		// y = 0,
 		width = 0,
 		height = 0,
 		dragPosition,
@@ -16,8 +14,6 @@
 		onDrop,
 		onNonDraggingClick = null
 	}: {
-		// x: number
-		// y: number
 		width: number
 		height: number
 		dragPosition: Position
@@ -40,23 +36,6 @@
 		relative: (x,y) => {
 			Selected.move(x,y, selectable)
 		},
-		// begin: (x, y) => {
-		// 	return {
-		// 		x: dragPosition.x - x,
-		// 		y: dragPosition.y - y
-		// 	}
-		// },
-		// relative: (x,y) => {
-		// 	console.log(x,y)
-		// },
-		// abs: (x, y, t) => {
-		// 	dragPosition.x = x
-		// 	dragPosition.y = y
-		// 	if (!Hotkeys.shiftKeyDown) dragPosition.snapTo(10)
-		// },
-		// dragcb(dragging) {
-		// 	dragging
-		// },
 		tap() {
 			selectable?.selectOnly()
 			onNonDraggingClick?.()

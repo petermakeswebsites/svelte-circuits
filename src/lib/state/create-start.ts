@@ -1,7 +1,8 @@
-import { Templates } from "./gates"
-import State from "./state.svelte"
-import { Switcher } from "./switcher.svelte"
-import { Wire } from "./wire.svelte"
+import { Templates } from "../logic-gates/templates"
+import State from "../state/state.svelte"
+import { Switcher } from "../logic-gates/switcher.svelte"
+import { Wire } from "../wire/wire.svelte"
+import { Gate } from "../logic-gates/gate.svelte"
 
 setTimeout(() => {
 	// State.add(Templates.and({x: 200, y:300, name: "andy"}))
@@ -10,7 +11,7 @@ setTimeout(() => {
 	// State.add(Templates.nor({x: 200, y:400, name: "nora"}))
 	// State.add(Templates.nand({x: 100, y:400, name: "nando"}))
 	// State.add(Templates.xnor({x: 100, y:300, name: "xnor"}))
-	State.add(Templates.not({x: 100, y: 500, name: "not" }))
+	State.add(new Gate(Templates.not({x: 100, y: 500, name: "not" })))
 	// State.add(Templates.junction({x: 200, y: 500, name: "junc" }))
 	// State.add(Templates.source({ x: 300, y: 500, name: 'sourcey' }))
 })

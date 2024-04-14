@@ -1,11 +1,13 @@
-import { Set as StateSet } from 'svelte/reactivity'
-import { Gate } from './gate.svelte'
-import State from './state.svelte'
+import { Gate } from '$lib/logic-gates/gate.svelte'
+import type { Switcher } from '$lib/logic-gates/switcher.svelte'
+import type { Position } from '$lib/position/position.svelte'
+import { Vec } from '$lib/position/vec'
+import { copy, paste } from '$lib/state/copy-paste'
+import State from '$lib/state/state.svelte'
+import { Hotkeys } from '$lib/utils/hotkeys.svelte'
 import { untrack } from 'svelte'
-import type { Position } from './position.svelte'
-import type { Switcher } from './switcher.svelte'
-import { Hotkeys } from './hotkeys.svelte'
-import { copy, paste } from './copy-paste'
+import { Set as StateSet } from 'svelte/reactivity'
+import { Box } from './box'
 
 export const Selected = new (class {
 	list = new StateSet<Selectable>()
@@ -23,55 +25,42 @@ export const Selected = new (class {
 		this.list.clear()
 	}
 
-	#relativeMoves: Map<Draggable, [x: number, y: number]> = new Map()
-	beginMove(clientX: number, clientY: number) {
+	#relativeMoves: Map<Draggable, Vec> = new Map()
+	beginMove(client : Vec) {
 		this.#relativeMoves.clear()
 		const all = [...this.list].filter((v) => v instanceof Draggable) as Draggable[]
 		this.#relativeMoves = new Map(
-			all.map((draggable) => [draggable, [draggable.associatedPosition.globalX, draggable.associatedPosition.globalY] as const])
+			all.map((draggable) => [draggable, draggable.associatedPosition.global])
 		)
 	}
 
-	move(clientX: number, clientY: number, centralTarget?: Selectable) {
-		let snapX = 0
-		let snapY = 0
+	move(client: Vec, centralTarget?: Selectable) {
+		let snap = new Vec()
 		if (centralTarget && centralTarget instanceof Draggable) {
 			const originalPos = this.#relativeMoves.get(centralTarget)
 			if (!originalPos) throw new Error(`Relative position not found in map`)
-			const [ox, oy] = originalPos
-			centralTarget.associatedPosition.x = ox + clientX
-			centralTarget.associatedPosition.y = oy + clientY
-			;[snapX, snapY] = centralTarget.associatedPosition.snapTo().diff
+			centralTarget.associatedPosition.set(originalPos.add(client))
+			snap = centralTarget.associatedPosition.snapTo().diff
 		}
 
-		for (const [draggable, [ox, oy]] of this.#relativeMoves) {
+		for (const [draggable, original] of this.#relativeMoves) {
 			if (draggable === centralTarget) continue
-			draggable.associatedPosition.x = ox + clientX + snapX
-			draggable.associatedPosition.y = oy + clientY + snapY
+			draggable.associatedPosition.set(original.add(client).add(snap))
 		}
 	}
 })()
 
 export const SelectionBox = new (class {
-	#x = $state(0)
-	#y = $state(0)
-	#w = $state(0)
-	#h = $state(0)
-
-	x = $derived(this.#w > 0 ? this.#x : this.#x + this.#w)
-	y = $derived(this.#h > 0 ? this.#y : this.#y + this.#h)
-	w = $derived(Math.abs(this.#w))
-	h = $derived(Math.abs(this.#h))
-	set(x: number, y: number, width: number, height: number) {
-		this.#x = x
-		this.#y = y
-		this.#w = width
-		this.#h = height
+	#from = $state<Vec>()!
+	#to = $state<Vec>()!
+	box = $derived(new Box(this.#from, this.#to))
+	set(from : Vec, to: Vec = new Vec()) {
+		this.#from = from
+		this.#to = to
 	}
 
-	setSize(w: number, h: number) {
-		this.#w = w
-		this.#h = h
+	setTo(to : Vec) {
+		this.#to = to
 	}
 
 	transfer() {
@@ -81,22 +70,20 @@ export const SelectionBox = new (class {
 	}
 
 	done() {
-		this.#w = 0
-		this.#h = 0
-		this.#x = 0
-		this.#y = 0
+		this.#to = new Vec()
+		this.#from = new Vec()
 	}
 
-	isOn = $derived(!(this.x === 0 && this.y === 0 && this.#w === 0 && this.#h === 0))
+	isOn = $derived(!(this.#from.isZeroVec && this.#to.isZeroVec))
 
 	selectedGates = $derived.by(() => {
 		const selects = new Set<Selectable>()
-		const position = [this.x, this.y, this.w, this.h] as const
+		const box = this.box
 		if (!this.isOn) return selects
 		untrack(() => {
 			const gates = [...State.pieces]
 			for (const gate of gates) {
-				if (gate.position.inside(...position)) {
+				if (gate.position.insideBox(...position)) {
 					selects.add(gate.selectable)
 				}
 			}

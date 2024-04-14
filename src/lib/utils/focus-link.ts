@@ -1,5 +1,3 @@
-import type { Selectable } from "./selectable.svelte"
-
 export function focuslink(node: SVGElement | HTMLElement, cb : (focussed : boolean ) => void) {
 	function focus() {
 		cb(true)

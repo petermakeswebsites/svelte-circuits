@@ -1,4 +1,4 @@
-import { pulse } from "./connector.svelte"
+import { pulse } from "../connections/clusters.svelte"
 
 export const Playback = new (class {
     HZ = 5
