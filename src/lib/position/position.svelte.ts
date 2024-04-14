@@ -42,13 +42,7 @@ export class Position {
 		return new Position(this.vec, this.parent)
 	}
 
-	insideBox(corner : Vec, dimensions : Vec) {
-		const vecFromCorner = this.vec.subtract(corner)
-		if (!vecFromCorner.positive) return false
-		return vecFromCorner.inside(dimensions)
-	}
-
-	toArr() : [x : number, y : number] {
+	toArr() : readonly [x : number, y : number] {
 		return untrack(() => this.global.toArr())
 	}
 

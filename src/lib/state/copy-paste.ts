@@ -1,3 +1,4 @@
+import { Vec } from '$lib/position/vec'
 import type { Wire } from '$lib/wire/wire.svelte'
 import type { Connector } from '../connections/connector.svelte'
 import type { Dot } from '../connections/dot.svelte'
@@ -66,10 +67,11 @@ export function paste(tplStr: StateString) {
 		}
 		return value
 	}) as StateJSONv1
-	const newGates = tpl.gates.map(({ template, position: [x, y] }) => {
+	const newGates = tpl.gates.map(({ template, position }) => {
+		const vec = Vec.fromArr(position)
 		if (typeof template === 'string') {
 			if (template in Templates) {
-				const temp = Templates[template as keyof typeof Templates]({ x, y, name: '' })
+				const temp = Templates[template as keyof typeof Templates]({ vec, name: '' })
 				return State.add(new Gate(temp as GateConstructor<any, any>))
 			} else {
 				throw new Error('Template not recognised: ' + template)

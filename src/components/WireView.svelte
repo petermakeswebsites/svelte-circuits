@@ -7,10 +7,9 @@
 	import { Gate } from '$lib/logic-gates/gate.svelte'
 	import State from '$lib/state/state.svelte'
 	import { focuslink } from '$lib/utils/focus-link'
+	import { linePath } from '$lib/utils/svg-helpers'
 	let { wire }: { wire: Wire } = $props()
-	const drawPath = $derived(
-		`M ${wire.from?.position.globalX} ${wire.from?.position.globalY} L ${wire.to?.position.globalX} ${wire.to?.position.globalY}`
-	)
+	const drawPath = $derived(linePath(wire.from.position.global, wire.to.position.global))
 	let hide = $state(false)
 </script>
 
@@ -21,22 +20,16 @@
 	}}
 	use:focuslink={(focussed) => (wire.selectable.selected = focussed)}
 	use:dragger={{
-		begin: (x, y, ele) => {
-			if (wire.from && wire.to) {
-				console.log('begin')
-				const j = State.add(new Gate(Templates.junction({ x, y, name: 'new junc' })))
-				State.createWire(wire.from, j.getInput(0), 'new 1')
-				State.createWire(j.getInput(0), wire.to, 'new 2')
-				hide = true
-				return {
-					extra: j.position
-				}
-			}
+		begin: (beginVec) => {
+			const j = State.add(new Gate(Templates.junction({ vec: beginVec, name: 'new junc' })))
+			State.createWire(wire.from, j.getInput(0), 'new 1')
+			State.createWire(j.getInput(0), wire.to, 'new 2')
+			hide = true
+			return j.position
 		},
-		abs: (x, y, position) => {
-			position.x = x
-			position.y = y
-			position.snapTo()
+		move: ({abs, extra}) => {
+			extra!.set(abs)
+			extra!.snapTo()
 		},
 		end: () => {
 			State.destroy(wire) // self-destruct this component

@@ -24,7 +24,7 @@ export class Vec extends Array<number> {
     }
 
     add(that : Vec) {
-        return new Vec(this[0] + that[0], this[1] + that[0])
+        return new Vec(this[0] + that[0], this[1] + that[1])
     }
 
     get squaredDist() {
@@ -76,18 +76,27 @@ export class Vec extends Array<number> {
      * @param that 
      */
     subtract(that : Vec) {
-        return new Vec(this[0] - that[0], this[0] - that[0])
+        return new Vec(this[0] - that[0], this[1] - that[1])
     }
 
-    toArr() : [x : number, y : number] {
+    toArr() : VecSerialised {
         return [this[0], this[1]] as const
     }
 
-    static fromArr(pos : [x : number, y : number]) {
+    static fromArr(pos : VecSerialised) {
         return new Vec(...pos)
+    }
+
+    times(scalar : number) {
+        return new Vec(this[0]*scalar, this[1]*scalar)
+    }
+
+    static fromPolar(theta: number, radius = 1) {
+        return new Vec(Math.cos(theta)*radius, Math.sin(theta)*radius)
     }
 }
 
+export type VecSerialised = readonly [x : number, y : number]
 
 function snap(value: number, multiple: number): number {
 	return Math.round(value / multiple) * multiple

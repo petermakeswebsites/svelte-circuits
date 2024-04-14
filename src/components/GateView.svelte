@@ -13,9 +13,9 @@
 
 </script>
 
-<Group x={gate.position.x} y={gate.position.y}>
+<Group pos={gate.position.vec}>
 	<!-- <Text x={0} y={-10} fontSize="13px">AND</Text> -->
-	<DraggerBox selectable={gate.selectable} dragPosition={gate.position} width={gate.box.width} height={gate.box.height} {onDrop} />
+	<DraggerBox selectable={gate.selectable} box={gate.box} {onDrop} />
 	<g>
 		{#each gate.paths as path}
 			<g transform="translate(-50%, -50%)">
@@ -25,10 +25,10 @@
 	</g>
 	{#each gate.inputs as input}
 		<DotView dot={input} />
-		<StubbyLine direction={input.stub} live={!!input.connector.isLive} x={input.position.x} y={input.position.y} />
+		<StubbyLine direction={input.stub} live={!!input.connector.isLive} pos={input.position.vec} />
 	{/each}
 	{#each gate.outputs as output}
 		<DotView dot={output} />
-		<StubbyLine direction={output.stub} live={!!output.connector.isLive && !gate.dummy} x={output.position.x} y={output.position.y} />
+		<StubbyLine direction={output.stub} live={!!output.connector.isLive && !gate.dummy} pos={output.position.vec}  />
 	{/each}
 </Group>

@@ -1,6 +1,7 @@
 import type { Dot } from '$lib/connections/dot.svelte'
 import { Selectable } from '$lib/selecting/selectable.svelte'
 import State from '$lib/state/state.svelte'
+import { Set as StateSet } from 'svelte/reactivity'
 
 export class Wire {
 	name: string
@@ -34,5 +35,9 @@ export class Wire {
 	 */
 	isConnectedTo(dot: Dot): Dot | null {
 		return this.from == dot ? this.to : this.to == dot ? this.from : null
+	}
+
+	isConnectedToAny(dot : StateSet<Dot>) {
+		return dot.has(this.from) || dot.has(this.to)
 	}
 }

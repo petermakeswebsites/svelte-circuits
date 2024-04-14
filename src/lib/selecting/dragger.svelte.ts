@@ -1,34 +1,37 @@
+import { Vec } from '$lib/position/vec'
+
 type FnList<T> = {
 	/**
 	 * Return some info you want passed to the move function
 	 * useful for initial positions, to get deltas
 	 * @returns
 	 */
-	begin?: (x: number, y: number, element? : SVGElement) => void | { x?: number; y?: number, extra? : T }
-	delta?: (dx: number, dy: number) => void
-	relative?: (rx: number, ry: number) => void
-	abs?: T extends undefined ? (ax: number, ay: number) => void : (ax: number, ay: number, extra: T) => void
+	begin?: (pos: Vec, element?: SVGElement) => T
+	move?: (options : {delta : Vec, rel: Vec, abs: Vec, extra : T | undefined}) => void
+	// delta?: (delta: Vec) => void
+	// relative?: (rel: Vec) => void
+	// abs?: T extends undefined ? (abs: Vec) => void : (abs: Vec, extra: T) => void
 	dragcb?: (dragging: boolean) => void
-	end?: (x : number, y : number) => void
+	end?: (pos: Vec) => void
 	/**
 	 * Non-dragging tap
 	 * @returns
 	 */
-	tap?: () => void
+	tap?: (pos : Vec) => void
 }
-export function dragger<T>(element: SVGElement, { begin, delta, relative, abs, dragcb, end, tap }: FnList<T>) {
+export function dragger<T>(
+	element: SVGElement,
+	{ begin: beginFn, move: moveFn, dragcb, end, tap }: FnList<T>
+) {
 	let dragging = false
 	let isDown = false
 
-	let customOffsetX = 0
-	let customOffsetY = 0
+	// let customOffset = new Vec()
 
-	let extra : undefined | T = undefined
+	let extra: T | undefined
 
-	let lastX = 0
-	let lastY = 0
-	let firstX = 0
-	let firstY = 0
+	let last = new Vec()
+	let first = new Vec()
 	let beginReset = true
 	/**
 	 *
@@ -37,44 +40,44 @@ export function dragger<T>(element: SVGElement, { begin, delta, relative, abs, d
 	function down(evt: PointerEvent) {
 		isDown = true
 		element.setPointerCapture(evt.pointerId)
-		lastX = evt.x
-		lastY = evt.y
-		firstX = lastX
-		firstY = lastY
+		last = new Vec(evt.x, evt.y)
+		first = last
 	}
 
 	function move(evt: PointerEvent) {
 		if (!isDown) return
+		const evtVec = new Vec(evt.x, evt.y)
 		if (beginReset) {
-			const rtn = begin?.(evt.x, evt.y, element)
-			customOffsetX = rtn?.x || 0
-			customOffsetY = rtn?.y || 0
-			extra = rtn?.extra || undefined
+			const rtn = beginFn?.(evtVec, element)
+			extra = rtn
 			beginReset = false
 		}
 
 		dragging = true
 		dragcb?.(true)
 
-		const deltaX = evt.x - lastX
-		const deltaY = evt.y - lastY
-		lastX = evt.x
-		lastY = evt.y
-		abs?.(evt.x + customOffsetX, evt.y + customOffsetY, extra as T)
-		delta?.(deltaX + customOffsetX, deltaY + customOffsetY)
-		relative?.(evt.x - firstX + customOffsetX, evt.y - firstY + customOffsetY)
+		last = evtVec
+		// absFn?.(evtVec.add(customOffset), extra as T)
+		// deltaFn?.(delta.add(customOffset))
+		// relativeFn?.(evtVec.subtract(first).subtract(customOffset))
+
+		const delta = evtVec.subtract(last)
+		const abs = evtVec
+		const rel = evtVec.subtract(first)
+		moveFn?.({abs,delta,rel,extra})
 	}
 
 	function up(evt: PointerEvent) {
 		element.releasePointerCapture(evt.pointerId)
+		const evtVec = new Vec(evt.x, evt.y)
 		if (!dragging) {
-			if (isDown) tap?.()
+			if (isDown) tap?.(evtVec)
 			isDown = false
 			return
 		}
 		isDown = false
 		beginReset = true
-		if (end) end(evt.x, evt.y)
+		if (end) end(evtVec)
 
 		dragging = false
 		dragcb?.(false)

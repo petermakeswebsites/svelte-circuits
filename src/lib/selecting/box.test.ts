@@ -6,21 +6,41 @@ import { Box } from "./box";
 
 describe('Box', () => {
 
-    // Box can be instantiated with two Vec objects as arguments
-    it('should instantiate Box with two Vec objects as arguments', () => {
-      const p1 = new Vec(1, 2);
-      const p2 = new Vec(3, 4);
-      const box = new Box(p1, p2);
-      expect(box.from).toEqual(new Vec(1, 2));
-      expect(box.to).toEqual(new Vec(3, 4));
-    });
+  // Box can be instantiated with two Vec objects as arguments
+  it('should instantiate Box with two Vec objects as arguments', () => {
+    const p1 = new Vec(1, 2);
+    const p2 = new Vec(3, 4);
+    const box = new Box(p1, p2);
+    expect(box.from).toEqual(new Vec(1, 2));
+    expect(box.to).toEqual(new Vec(3, 4));
+  });
 
-    // Box can be instantiated with two identical Vec objects as arguments
-    it('should instantiate Box with two identical Vec objects as arguments', () => {
-      const p1 = new Vec(1, 2);
-      const p2 = new Vec(1, 2);
-      const box = new Box(p1, p2);
-      expect(box.from).toEqual(new Vec(1, 2));
-      expect(box.to).toEqual(new Vec(1, 2));
-    });
+  it('should instantiate Box with two identical Vec objects as arguments', () => {
+    const p1 = new Vec(1, 2);
+    const p2 = new Vec(1, 2);
+    const box = new Box(p1, p2);
+    expect(box.from).toEqual(new Vec(1, 2));
+    expect(box.to).toEqual(new Vec(1, 2));
+  });
+
+  // Box can be instantiated with two identical Vec objects as arguments
+  it('should re-arrange to/from vecs to top/bottom corner', () => {
+    const p1 = new Vec(1, 10);
+    const p2 = new Vec(10, 1);
+    const box = new Box(p1, p2);
+    expect(box.from).toEqual(new Vec(1, 1));
+    expect(box.to).toEqual(new Vec(10, 10));
+  });
+
+  it('should show if vec is inside', () => {
+    const p1 = new Vec(10, 10);
+    const p2 = new Vec(20, 20);
+    const box = new Box(p1, p2);
+    const v1 = new Vec(15, 25)
+    const v2 = new Vec(15, 15)
+    const v3 = new Vec(10, 5)
+    expect(box.hasWithin(v1)).toBeFalsy
+    expect(box.hasWithin(v2)).toBeTruthy
+    expect(box.hasWithin(v3)).toBeFalsy
+  });
 });

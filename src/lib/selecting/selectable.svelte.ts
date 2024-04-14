@@ -51,8 +51,8 @@ export const Selected = new (class {
 })()
 
 export const SelectionBox = new (class {
-	#from = $state<Vec>()!
-	#to = $state<Vec>()!
+	#from = $state<Vec>(new Vec())
+	#to = $state<Vec>(new Vec())
 	box = $derived(new Box(this.#from, this.#to))
 	set(from : Vec, to: Vec = new Vec()) {
 		this.#from = from
@@ -83,7 +83,7 @@ export const SelectionBox = new (class {
 		untrack(() => {
 			const gates = [...State.pieces]
 			for (const gate of gates) {
-				if (gate.position.insideBox(...position)) {
+				if (box.hasWithin(gate.position.vec)) {
 					selects.add(gate.selectable)
 				}
 			}
@@ -114,8 +114,8 @@ globalThis.addEventListener('keydown', function (event) {
 		case 'c':
 			if (Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown) {
 				event.preventDefault()
-				console.log('nice try!')
-				this.navigator.clipboard.writeText(copy(gatesOnly))
+				const wires = [...State.wires].filter(wire => wire.isConnectedToAny(State.dots))
+				this.navigator.clipboard.writeText(copy(gatesOnly, wires))
 			}
 			break
 		case 'v':

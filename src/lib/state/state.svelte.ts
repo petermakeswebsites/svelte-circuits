@@ -60,7 +60,7 @@ const State = new (class {
 				}
 			})
 		}
-		return dotList
+		return new StateSet(dotList)
 	})
 
 	clearState() {

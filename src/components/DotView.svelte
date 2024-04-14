@@ -15,7 +15,7 @@
 					this.newLineDrag.from,
 					arr.length
 						? arr[0]
-						: State.add(new Gate(Templates.junction({ x: this.newLineDrag.to.globalX, y: this.newLineDrag.to.globalY, name: 'junc' })))
+						: State.add(new Gate(Templates.junction({vec: this.newLineDrag.to.global, name: 'junc' })))
 								.inputs[0]
 				)
 			} catch (e) {
@@ -60,15 +60,14 @@
 	})
 </script>
 
-<Group x={dot.position.x} y={dot.position.y}>
+<Group pos={dot.position.vec}>
 	<g
 		class:receiving={hovering}
 		use:dragger={{
-			relative(x, y) {
-				const newPosition = dot.position.popToGlobal().move(x, y)
+			move({rel}) {
+				const newPosition = dot.position.popToGlobal().move(rel)
 				SenderReceiver.updateDragPosition(dot, newPosition)
 			},
-			begin() {},
 			end() {
 				SenderReceiver.processSending()
 			}

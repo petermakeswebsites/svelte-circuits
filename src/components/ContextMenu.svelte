@@ -11,7 +11,9 @@
 	import { gridspace } from '$lib/constants/grid'
 	import { Selected } from '$lib/selecting/selectable.svelte'
 	import GateTemplateView from './GateTemplateView.svelte'
-	let { contextMenuAt = $bindable() }: { contextMenuAt: null | { x: number; y: number } } = $props()
+	import { Vec } from '$lib/position/vec'
+	import { accessible } from '$lib/utils/accessible-action'
+	let { contextMenuAt = $bindable() }: { contextMenuAt: null | Vec } = $props()
 
 	const radius = 100
 
@@ -24,16 +26,15 @@
 					const angle = i * (1 / entries.length) * 2 * Math.PI
 					return {
 						rendered: entry({
-							x: contextMenuAt!.x + Math.cos(angle) * radius,
-							y: contextMenuAt!.y + Math.sin(angle) * radius,
+							vec: contextMenuAt!.add(Vec.fromPolar(angle, radius)),
 							name: 'dummy',
 							dummy: true
 						}),
 						create: (position: Position) => {
-							const newbie = State.add(new Gate(entry({ x: position.x, y: position.y, name: 'dragged' }) as GateConstructor<any, any>))
+							const newbie = State.add(new Gate(entry({ vec: position.global, name: 'dragged' }) as GateConstructor<any, any>))
 							Selected.clear()
 							Selected.select(newbie.selectable)
-							Selected.beginMove(position.x, position.y)
+							Selected.beginMove(position.vec)
 							contextMenuAt = null
 						}
 					}
@@ -46,12 +47,12 @@
 </script>
 
 {#if display && contextMenuAt}
-	<rect x={0} y={0} width="100%" height="100%" on:click={() => (contextMenuAt = null)} fill="transparent" />
+	<rect x={0} y={0} use:accessible={{label: "backdrop", onclick: () => contextMenuAt = null}} width="100%" height="100%" fill="transparent" />
 	<circle cx={contextMenuAt.x} cy={contextMenuAt.y} r={150} fill="#fff"></circle>
 	{#each display as entry}
-		<Group>
+		<g>
 			<GateTemplateView gateConstructor={entry.rendered} onDrop={entry.create} />
-		</Group>
+		</g>
 	{/each}
 {/if}
 

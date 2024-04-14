@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { dragger } from '$lib/selecting/dragger.svelte'
 	import { Selected, SelectionBox } from '$lib/selecting/selectable.svelte'
+	import Rect from './Rect.svelte'
     
 </script>
 
 {#if SelectionBox.isOn}
-	<rect
-		x={SelectionBox.x}
-		y={SelectionBox.y}
-		width={SelectionBox.w}
-		height={SelectionBox.h}
+	<Rect
+		box={SelectionBox.box}
 		fill="#aaf3"
         rx={3}
 	/>
@@ -20,13 +18,12 @@
 	width="100%"
 	height="100%"
 	use:dragger={{
-        begin: (x,y) => {
-            console.log("Clearing list!")
+        begin: (v) => {
             Selected.clear()
-            SelectionBox.set(x,y, 0, 0)
+            SelectionBox.set(v)
         },
-        abs: (x,y) => {
-            SelectionBox.setSize(x,y)
+        move: ({abs}) => {
+            SelectionBox.setTo(abs)
         },
         end: () => {
             SelectionBox.transfer()

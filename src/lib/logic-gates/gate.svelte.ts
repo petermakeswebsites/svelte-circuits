@@ -1,5 +1,7 @@
 import { StubDirection, Dot } from "$lib/connections/dot.svelte"
 import { Position } from "$lib/position/position.svelte"
+import { Vec, type VecSerialised } from "$lib/position/vec"
+import { Box, type BoxSerialised } from "$lib/selecting/box"
 import { Draggable } from "$lib/selecting/selectable.svelte"
 import State from "$lib/state/state.svelte"
 import { every } from "$lib/utils/rune-every"
@@ -7,18 +9,16 @@ import { type TupleType, lengthMap, type NumericRange } from "$lib/utils/type-he
 import { type Evaluation, createEvaluation } from "./gate-formula"
 
 export type GateConstructor<T extends number, R extends number> = {
-	x: number
-	y: number
+	vec : Vec
 	name: string
 	paths: string[]
-	box: BoundingBox
+	box: Box
 	dummy: boolean
 	template?: string
 	inputs: TupleType<
 		T,
 		{
-			x: number
-			y: number
+			vec: Vec
 			name: string
 			stub: StubDirection
 		}
@@ -26,8 +26,7 @@ export type GateConstructor<T extends number, R extends number> = {
 	outputs: TupleType<
 		R,
 		{
-			x: number
-			y: number
+			vec: Vec
 			name: string
 			stub: StubDirection
 			emitter: (...args: TupleType<T, boolean>) => boolean
@@ -47,7 +46,7 @@ export class Gate<T extends number, R extends number> {
 	}
 
 	readonly dummy
-	box: BoundingBox
+	box: Box
 	position: Position
 	name: string
 	readonly template: string | GateConstructor<T, R>
@@ -59,15 +58,14 @@ export class Gate<T extends number, R extends number> {
 		}
 		this.dummy = gate.dummy
 		this.name = gate.name
-		this.position = new Position(gate.x, gate.y)
+		this.position = new Position(gate.vec)
 		this.box = gate.box
-		this.inputs = lengthMap(gate.inputs, ({ name, x, y, stub }) => new Dot({ name, x, y, stub, parent: this }))
+		this.inputs = lengthMap(gate.inputs, ({ name, vec, stub }) => new Dot({ name, vec, stub, parent: this }))
 		this.outputs = lengthMap(
 			gate.outputs,
-			({ x, y, name, emitter, stub }) =>
+			({ vec, name, emitter, stub }) =>
 				new Dot({
-					x,
-					y,
+					vec,
 					name,
 					parent: this,
 					stub,
@@ -106,8 +104,7 @@ export class Gate<T extends number, R extends number> {
 }
 
 type DotSerialised = {
-	x: number
-	y: number
+	vec: VecSerialised
 	stub: StubDirection
 	name: string
 }
@@ -118,49 +115,41 @@ type Output<T extends number> = DotSerialised & {
 
 type Input = DotSerialised & {}
 
-type BoundingBox = {
-	width: number
-	height: number
-}
-
 export type GateSerialised<T extends number, R extends number> = {
 	inputs: TupleType<T, Input>
 	outputs: TupleType<R, Output<T>>
 	paths: string[]
-	box?: BoundingBox
+	box?: BoxSerialised
 	template?: string
 }
 
 export function createGateTemplateMaker<T extends number, R extends number>(
 	serialised: GateSerialised<T, R>
-): (settings: { x: number; y: number; name: string; dummy?: boolean }) => GateConstructor<T, R> {
+): (settings: { vec : Vec; name: string; dummy?: boolean }) => GateConstructor<T, R> {
 	const inputs = lengthMap(serialised.inputs, (input) => ({
 		name: input.name,
-		x: input.x,
-		y: input.y,
+		vec: Vec.fromArr(input.vec),
 		stub: input.stub
 	}))
 
 	const outputs = lengthMap(serialised.outputs, (output) => ({
 		name: output.name,
-		x: output.x,
-		y: output.y,
+		vec: Vec.fromArr(output.vec),
 		emitter: createEvaluation(output.emittingFn),
 		stub: output.stub
 	}))
 
 	const paths = serialised.paths
-	const box = serialised.box || { x: 0, y: 0, width: 50, height: 50 }
+	const box = serialised.box || Box.centre(new Vec(50,50)).centre().toArr()
 
-	return ({ x, y, name, dummy = false }: { x: number; y: number; name: string; dummy?: boolean }) => {
+	return ({ vec, name, dummy = false }: { vec : Vec; name: string; dummy?: boolean }) => {
 		const gateConstructor: GateConstructor<T, R> = {
 			inputs,
 			outputs,
 			name,
 			paths,
-			x,
-			y,
-			box,
+			vec,
+			box : Box.fromArr(box),
 			template: serialised.template,
 			dummy
 		}

@@ -1,4 +1,10 @@
 <script lang="ts" generics="T extends number, R extends number">
+	import Rect from './Rect.svelte'
+
+	import { StubDirection } from '$lib/connections/dot.svelte'
+
+	import { Vec } from '$lib/position/vec'
+
 	import { dragger } from '$lib/selecting/dragger.svelte'
 	import DotViewMiddleDot from './DotViewMiddleDot.svelte'
 	import DotViewCircles from './DotViewCircles.svelte'
@@ -10,27 +16,21 @@
 
 	let { gateConstructor, onDrop }: { gateConstructor: GateConstructor<any, any>; onDrop: (position: Position) => void } = $props()
 
-    let {box, paths, x, y, inputs, outputs} = $derived(gateConstructor)
-	let pos = $derived(new Position(x, y))
+	let { box, paths, vec, inputs, outputs } = $derived(gateConstructor)
 
 	// $inspect(gate.bodyLive)
 </script>
 
-<Group x={pos.x} y={pos.y}>
+<Group pos={vec}>
 	<!-- <Text x={0} y={-10} fontSize="13px">AND</Text> -->
-	<rect
-		x={-box.width / 2}
-		y={-box.height / 2}
-		width={box.width}
-		height={box.height}
-		rx={10}
-		fill="#aaf3"
+	<g
 		use:dragger={{
-			begin: (x, y, element) => onDrop(pos),
-			tap: () => onDrop(pos)
+			begin: () => onDrop(new Position(vec)),
+			tap: () => onDrop(new Position(vec))
 		}}
 	>
-	</rect>
+		<Rect {box} rx={10} fill="#aaf3" />
+	</g>
 	<g class="no-pointer-events">
 		<g>
 			{#each paths as path}
@@ -40,14 +40,14 @@
 			{/each}
 		</g>
 		{#each inputs as input}
-			<Group x={input.x} y={input.y}>
+			<Group pos={input.vec}>
 				<DotViewCircles />
 				<DotViewMiddleDot />
 				<StubbyLine direction={input.stub} />
 			</Group>
 		{/each}
 		{#each outputs as output}
-			<Group x={output.x} y={output.y}>
+			<Group pos={output.vec}>
 				<DotViewCircles />
 				<DotViewMiddleDot />
 				<StubbyLine direction={output.stub} />

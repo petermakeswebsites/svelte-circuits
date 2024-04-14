@@ -16,8 +16,10 @@
 	import Backdrop from '../components/Backdrop.svelte'
 	import { Hotkeys } from '$lib/utils/hotkeys.svelte'
 	import State from '$lib/state/state.svelte'
+	import { linePath } from '$lib/utils/svg-helpers'
+	import { Vec } from '$lib/position/vec'
 
-	let contextMenuAt: null | { x: number; y: number } = $state(null)
+	let contextMenuAt: null | Vec = $state(null)
 
 	// $inspect(Hotkeys.currentlyDown)
 
@@ -30,7 +32,7 @@
 	height="100%"
 	on:contextmenu={(evt) => {
 		evt.preventDefault()
-		contextMenuAt = { x: evt.clientX, y: evt.clientY }
+		contextMenuAt = new Vec(evt.clientX, evt.clientY)
 	}}
 	role="presentation"
 >
@@ -50,8 +52,7 @@
 		<g>
 			<Path
 				live={false}
-				path="M {SenderReceiver.newLineDrag.from.position.globalX} {SenderReceiver.newLineDrag.from.position.globalY} L {SenderReceiver
-					.newLineDrag.to.globalX} {SenderReceiver.newLineDrag.to.globalY}"
+				path={linePath(SenderReceiver.newLineDrag.from.position.global, SenderReceiver.newLineDrag.to.global)}
 			/>
 		</g>
 	{/if}
