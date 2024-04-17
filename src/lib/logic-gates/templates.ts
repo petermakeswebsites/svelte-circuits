@@ -178,7 +178,7 @@ export const Templates = {
 		paths: []
 	}),
 	source: createGateTemplateMaker({
-		template: 'junction',
+		template: 'source',
 		box: Box.centre(new Vec(40, 40)).toArr(),
 		outputs: [
 			{
