@@ -1,4 +1,5 @@
 import { Vec } from '$lib/position/vec'
+import { ZoomScroll } from '$lib/view-navigation.ts/scroll-zoom.svelte'
 
 type FnList<T> = {
 	/**
@@ -18,10 +19,11 @@ type FnList<T> = {
 	 * @returns
 	 */
 	tap?: (pos : Vec) => void
+	applyZoomTransforms? : boolean
 }
 export function dragger<T>(
 	element: SVGElement,
-	{ begin: beginFn, move: moveFn, dragcb, end, tap }: FnList<T>
+	{ begin: beginFn, move: moveFn, dragcb, end, tap, applyZoomTransforms = true }: FnList<T>
 ) {
 	let dragging = false
 	let isDown = false
@@ -40,13 +42,17 @@ export function dragger<T>(
 	function down(evt: PointerEvent) {
 		isDown = true
 		element.setPointerCapture(evt.pointerId)
-		last = new Vec(evt.x, evt.y)
+		last = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(new Vec(evt.x, evt.y)) : new Vec(evt.x, evt.y)
 		first = last
 	}
 
+	let nextMove : ReturnType<typeof requestAnimationFrame> = -1
+	let pendingNextFrame = false
 	function move(evt: PointerEvent) {
 		if (!isDown) return
-		const evtVec = new Vec(evt.x, evt.y)
+		const evtVec = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(new Vec(evt.x, evt.y)) : new Vec(evt.x, evt.y)
+
+		// This is when the true beginning actually fires
 		if (beginReset) {
 			const rtn = beginFn?.(evtVec, element)
 			extra = rtn
@@ -60,16 +66,27 @@ export function dragger<T>(
 		// absFn?.(evtVec.add(customOffset), extra as T)
 		// deltaFn?.(delta.add(customOffset))
 		// relativeFn?.(evtVec.subtract(first).subtract(customOffset))
-
-		const delta = evtVec.subtract(last)
-		const abs = evtVec
-		const rel = evtVec.subtract(first)
-		moveFn?.({abs,delta,rel,extra})
+		if (pendingNextFrame) {
+			console.log("Dropping unnecessary move")
+			return
+		}
+		pendingNextFrame = true
+		nextMove = requestAnimationFrame(() => {
+			pendingNextFrame = false
+			const delta = evtVec.subtract(last)
+			const abs = evtVec
+			const rel = evtVec.subtract(first)
+			moveFn?.({abs,delta,rel,extra})
+		})
 	}
 
 	function up(evt: PointerEvent) {
 		element.releasePointerCapture(evt.pointerId)
-		const evtVec = new Vec(evt.x, evt.y)
+		if (pendingNextFrame) {
+			cancelAnimationFrame(nextMove)
+			pendingNextFrame = false
+		}
+		const evtVec = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(new Vec(evt.x, evt.y)) : new Vec(evt.x, evt.y)
 		if (!dragging) {
 			if (isDown) tap?.(evtVec)
 			isDown = false

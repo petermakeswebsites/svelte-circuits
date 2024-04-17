@@ -12,12 +12,16 @@
 	import { Gate } from '$lib/logic-gates/gate.svelte'
 	import '$lib/state/pulse.svelte'
 	import PlayPauseReset from '../components/PlayPauseReset.svelte'
-	import "$lib/state/copy-paste"
+	import '$lib/state/copy-paste'
 	import Backdrop from '../components/Backdrop.svelte'
 	import { Hotkeys } from '$lib/utils/hotkeys.svelte'
 	import State from '$lib/state/state.svelte'
 	import { linePath } from '$lib/utils/svg-helpers'
 	import { Vec } from '$lib/position/vec'
+	import { ZoomScroll } from '$lib/view-navigation.ts/scroll-zoom.svelte'
+	import '$lib/keyboard-shortcuts/keyboard-shortcuts'
+	import Rect from '../components/Rect.svelte'
+	import { Box } from '$lib/selecting/box'
 
 	let contextMenuAt: null | Vec = $state(null)
 
@@ -36,41 +40,28 @@
 	}}
 	role="presentation"
 >
-	<defs>
-		<pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-			<path d="M 10 0 L 0 0 0 10" fill="none" stroke="#0002" stroke-width="0.5" />
-		</pattern>
-		<pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
-			<rect width="80" height="80" fill="url(#smallGrid)" />
-			<path d="M 80 0 L 0 0 0 80" fill="none" stroke="#0003" stroke-width="1" />
-		</pattern>
-	</defs>
-
-	<rect width="100%" height="100%" fill="url(#grid)" />
 	<Backdrop />
+	<g transform="{ZoomScroll.matrix.cssTransform}">
 	{#if SenderReceiver.newLineDrag}
 		<g>
-			<Path
-				live={false}
-				path={linePath(SenderReceiver.newLineDrag.from.position.global, SenderReceiver.newLineDrag.to.global)}
-			/>
+			<Path live={false} path={linePath(SenderReceiver.newLineDrag.from.position.global, SenderReceiver.newLineDrag.to.global)} />
 		</g>
 	{/if}
 
-	{#each State.wires as wire (wire)}
-		{#if wire instanceof Wire}
-			<WireView {wire} />
-		{/if}
-	{/each}
-	<!-- <Dot /> -->
-	{#each State.pieces as item (item)}
-		{#if item instanceof Gate}
-			<GateView gate={item} />
-		<!-- {:else if item instanceof Switcher}
+		{#each State.wires as wire (wire)}
+			{#if wire instanceof Wire}
+				<WireView {wire} />
+			{/if}
+		{/each}
+		<!-- <Dot /> -->
+		{#each State.pieces as item (item)}
+			{#if item instanceof Gate}
+				<GateView gate={item} />
+				<!-- {:else if item instanceof Switcher}
 			<SwitcherView switcher={item} /> -->
-		{/if}
-	{/each}
-
+			{/if}
+		{/each}
+	</g>
 	<ContextMenu bind:contextMenuAt />
 </svg>
 <PlayPauseReset />

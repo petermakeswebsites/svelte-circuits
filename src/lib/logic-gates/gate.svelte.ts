@@ -1,4 +1,5 @@
-import { StubDirection, Dot } from "$lib/connections/dot.svelte"
+import { Dot } from "$lib/connections/dot.svelte"
+import type { StubDirection } from "$lib/connections/stub"
 import { Position } from "$lib/position/position.svelte"
 import { Vec, type VecSerialised } from "$lib/position/vec"
 import { Box, type BoxSerialised } from "$lib/selecting/box"

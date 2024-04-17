@@ -39,13 +39,14 @@
 		},
 		end() {
 			onDrop?.(selectable.associatedPosition)
+			Selected.finish()
 		}
 	}}
 >
 	<Rect {box} rx="15" ry="15" fill="transparent" />
 	<Rect class="bgrect" {box} rx="5" ry="5" fill="black" />
 	<g class:showing={selectable.selected} transition:fade>
-		<Rect {box} rx="5" ry="5" fill="#0001" stroke-width={2} stroke="#0008" opacity={0} />
+		<Rect {box} rx="5" ry="5" fill="#0000ff08" stroke-width={2} stroke="#0003" opacity={0} />
 	</g>
 </g>
 
@@ -54,7 +55,7 @@
 		cursor: move;
 	}
 
-	.showing {
+	.showing :global(rect) {
 		opacity: 1;
 	}
 

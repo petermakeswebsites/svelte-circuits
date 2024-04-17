@@ -1,10 +1,5 @@
 <script lang="ts" generics="T extends number, R extends number">
 	import Rect from './Rect.svelte'
-
-	import { StubDirection } from '$lib/connections/dot.svelte'
-
-	import { Vec } from '$lib/position/vec'
-
 	import { dragger } from '$lib/selecting/dragger.svelte'
 	import DotViewMiddleDot from './DotViewMiddleDot.svelte'
 	import DotViewCircles from './DotViewCircles.svelte'

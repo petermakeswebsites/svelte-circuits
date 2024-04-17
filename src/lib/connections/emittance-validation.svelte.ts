@@ -1,25 +1,14 @@
 import { tick } from 'svelte'
-import type { Cluster } from '../connections/clusters.svelte'
-
+import type { Cluster } from './clusters.svelte'
+/**
+ * This suppresses reactivity while doing actons like adding objects. It
+ * essentially closes off calculating all the {@link Cluster} calculations. I
+ * suspect it may also help from accidentally falling into weird infinite loops.
+ */
 export const EmittanceSuppressor = new (class {
 	suppressed = $state(false)
 	suppress() {
 		this.suppressed = true
-        this.#validationList.clear()
-	}
-
-	#validationList = new Set<Cluster>()
-	validationIsOk(cluster: Cluster): boolean {
-        console.log("list", this.#validationList)
-        let rtnVal : boolean
-		if (this.#validationList.has(cluster)) {
-			rtnVal = false
-		} else {
-			this.#validationList.add(cluster)
-			rtnVal = true
-		}
-        console.log("pass:", rtnVal)
-        return rtnVal
 	}
 
 	validating = $state(false)
@@ -30,22 +19,14 @@ export const EmittanceSuppressor = new (class {
 	 */
 	async validate(fn: () => void) {
 		if (this.validating === false) {
-            // console.group("Validation", this.suppressed ? 'Already suppressed' : 'Not suppressed, suppressing!')
 			const original = this.suppressed
-            // console.log('Surpressing...')
 			this.suppress()
 			this.validating = true
-            // console.log('Running func...')
 			fn()
 			await tick()
-            // console.log("Ready to clusterify!")
 			this.validating = false
 			this.suppressed = original
-            // console.log('Resetting...')
-            // console.log('Unsurpressing...')
-            console.groupEnd()
 		} else {
-            // console.log("Running inner func")
 			fn()
 		}
 	}

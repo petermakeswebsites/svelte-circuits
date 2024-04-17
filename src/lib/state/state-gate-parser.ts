@@ -1,7 +1,7 @@
 import type { GateConstructor } from "$lib/logic-gates/gate.svelte"
 /**
- * Numerical representation of a particular {@link Gate} and a particular
- * {@link Dot} within that gate.
+ * Numerical serialised representation of a particular {@link Gate} and a
+ * particular {@link Dot} within that gate.
  */
 export type DotPath = [gate: number, dot: number]
 

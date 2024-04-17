@@ -3,17 +3,7 @@ import { Position } from '$lib/position/position.svelte'
 import { Vec } from '$lib/position/vec'
 import State from '$lib/state/state.svelte'
 import { Connector } from './connector.svelte'
-
-/**
- * Direction for the stubby thing poking out of the connector
- */
-export enum StubDirection {
-	LEFT = 180,
-	RIGHT = 0,
-	UP = 90,
-	DOWN = 270,
-	NONE = '_'
-}
+import { StubDirection } from './stub'
 
 /**
  * The Dot is a higher level class. It contains connection, location and view

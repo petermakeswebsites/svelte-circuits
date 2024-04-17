@@ -8,6 +8,7 @@ import { Hotkeys } from '$lib/utils/hotkeys.svelte'
 import { untrack } from 'svelte'
 import { Set as StateSet } from 'svelte/reactivity'
 import { Box } from './box'
+import { StateHistory } from '$lib/state/history.svelte'
 
 export const Selected = new (class {
 	list = new StateSet<Selectable>()
@@ -26,12 +27,10 @@ export const Selected = new (class {
 	}
 
 	#relativeMoves: Map<Draggable, Vec> = new Map()
-	beginMove(client : Vec) {
+	beginMove(client: Vec) {
 		this.#relativeMoves.clear()
 		const all = [...this.list].filter((v) => v instanceof Draggable) as Draggable[]
-		this.#relativeMoves = new Map(
-			all.map((draggable) => [draggable, draggable.associatedPosition.global])
-		)
+		this.#relativeMoves = new Map(all.map((draggable) => [draggable, draggable.associatedPosition.global]))
 	}
 
 	move(client: Vec, centralTarget?: Selectable) {
@@ -48,18 +47,22 @@ export const Selected = new (class {
 			draggable.associatedPosition.set(original.add(client).add(snap))
 		}
 	}
+
+	finish() {
+		StateHistory.saveWhenIdle()
+	}
 })()
 
 export const SelectionBox = new (class {
 	#from = $state<Vec>(new Vec())
 	#to = $state<Vec>(new Vec())
 	box = $derived(new Box(this.#from, this.#to))
-	set(from : Vec, to: Vec = new Vec()) {
+	set(from: Vec, to: Vec = new Vec()) {
 		this.#from = from
 		this.#to = to
 	}
 
-	setTo(to : Vec) {
+	setTo(to: Vec) {
 		this.#to = to
 	}
 
@@ -103,41 +106,21 @@ const gatesOnly = $derived.by(() => {
 	return newArr
 })
 
-globalThis.addEventListener('keydown', function (event) {
-	switch (event.key) {
-		case 'Delete':
-		case 'Backspace':
-			for (const selected of selectedArray) {
-				selected._run('delete')
-			}
-			break
-		case 'c':
-			if (Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown) {
-				event.preventDefault()
-				const wires = [...State.wires].filter(wire => wire.isConnectedToAny(State.dots))
-				this.navigator.clipboard.writeText(copy(gatesOnly, wires))
-			}
-			break
-		case 'v':
-			if (Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown) {
-				this.navigator.clipboard.readText().then((text) => {
-					Selected.clear()
-					if (text) {
-						const ret = paste(text)
-						for (const gate of ret) {
-							Selected.select(gate.selectable)
-						}
-					}
-				})
-			}
-		case 'a':
-			if (Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown) {
-				for (const piece of State.pieces) {
-					Selected.select(piece.selectable)
-				}
-			}
+export function runActionOnSelected(key: keyof Actions) {
+	for (const selected of selectedArray) {
+		selected._run(key)
 	}
-})
+}
+
+export function copySelected() {
+	navigator.clipboard.writeText(copy(gatesOnly, State.getWiresAttachedToGates(gatesOnly)))
+}
+
+export function selectAll() {
+	for (const piece of State.pieces) {
+		Selected.select(piece.selectable)
+	}
+}
 
 type Actions = {
 	delete?: () => void
@@ -152,14 +135,11 @@ export class Selectable {
 		if (value) {
 			Selected.select(this)
 		} else {
-			console.log('deleting')
 			Selected.deselect(this)
 		}
 	}
 
 	selectOnly() {
-		console.log('clearing?')
-		// @ts-ignore
 		Selected.clear()
 		this.selected = true
 	}

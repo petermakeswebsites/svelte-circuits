@@ -1,13 +1,16 @@
-import { StubDirection } from '$lib/connections/dot.svelte'
+import { StubDirection } from '$lib/connections/stub'
 import { Vec } from '$lib/position/vec'
 import { Box } from '$lib/selecting/box'
 import { FormulaOperation, type Evaluation } from './gate-formula'
 import { createGateTemplateMaker } from './gate.svelte'
 
-function generateTwoInOneOut(template: string, paths: string[], emittingFn: Evaluation<2>, shiftOutput = 0) {
+const regularBox = Box.centre(new Vec(80, 50))
+const notBox = regularBox.shiftLowerRight(new Vec(10, 0))
+
+function generateTwoInOneOut(template: string, paths: string[], emittingFn: Evaluation<2>, shiftOutput = 0, box?: Box) {
 	return createGateTemplateMaker({
 		template,
-        box: Box.centre(new Vec(80,50)).toArr(),
+		box: box?.toArr() || regularBox.toArr(),
 		inputs: [
 			{
 				name: 'input1',
@@ -76,7 +79,8 @@ export const Templates = {
 				b: 1
 			}
 		},
-		10
+		10,
+		notBox
 	),
 	nand: generateTwoInOneOut(
 		'nand',
@@ -89,7 +93,8 @@ export const Templates = {
 				b: 1
 			}
 		},
-		10
+		10,
+		notBox
 	),
 	xnor: generateTwoInOneOut(
 		'xnor',
@@ -113,23 +118,24 @@ export const Templates = {
 				}
 			}
 		},
-		10
+		10,
+		notBox
 	),
 	buffer: createGateTemplateMaker({
 		template: 'buffer',
-        box: Box.centre(new Vec(80,50)).toArr(),
+		box: Box.centre(new Vec(80, 50)).toArr(),
 		inputs: [
 			{
 				name: 'input',
 				stub: StubDirection.RIGHT,
-                vec: [-30, 0]
+				vec: [-30, 0]
 			}
 		] as const,
 		outputs: [
 			{
 				name: 'output',
 				stub: StubDirection.LEFT,
-                vec: [20, 0],
+				vec: [20, 0],
 				emittingFn: 0
 			}
 		] as const,
@@ -137,7 +143,7 @@ export const Templates = {
 	}),
 	not: createGateTemplateMaker({
 		template: 'not',
-        box: Box.centre(new Vec(80,50)).toArr(),
+		box: Box.centre(new Vec(80, 50)).toArr(),
 		inputs: [
 			{
 				name: 'input',
@@ -160,24 +166,24 @@ export const Templates = {
 	}),
 	junction: createGateTemplateMaker({
 		template: 'junction',
-        box: Box.centre(new Vec(40,40)).toArr(),
+		box: Box.centre(new Vec(40, 40)).toArr(),
 		outputs: [] as const,
 		inputs: [
 			{
 				name: 'joint',
 				stub: StubDirection.NONE,
-                vec: [0,0]
+				vec: [0, 0]
 			}
 		] as const,
 		paths: []
 	}),
 	source: createGateTemplateMaker({
 		template: 'junction',
-        box: Box.centre(new Vec(40,40)).toArr(),
+		box: Box.centre(new Vec(40, 40)).toArr(),
 		outputs: [
 			{
 				name: 'source',
-                vec: [0,0],
+				vec: [0, 0],
 				stub: StubDirection.NONE,
 				emittingFn: true
 			}

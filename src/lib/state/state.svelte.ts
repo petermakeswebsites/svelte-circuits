@@ -4,6 +4,7 @@ import type { Dot } from '$lib/connections/dot.svelte'
 import { EmittanceSuppressor } from '$lib/connections/emittance-validation.svelte'
 import type { Gate } from '$lib/logic-gates/gate.svelte'
 import { Wire } from '$lib/wire/wire.svelte'
+import { StateHistory } from './history.svelte'
 
 export type Piece = Gate<any, any>
 const State = new (class {
@@ -13,11 +14,13 @@ const State = new (class {
 	connectors = $derived([...this.pieces].flatMap((piece) => piece.dots).map((dot) => dot.connector))
 	add<T extends Wire | Piece>(r: T): T {
 		EmittanceSuppressor.validate(() => this.#getAppropriateStore(r).add(r))
+		StateHistory.saveWhenIdle()
 		return r
 	}
 
 	delete<T extends Wire | Piece>(r: T) {
 		EmittanceSuppressor.validate(() => this.#getAppropriateStore(r).delete(r))
+		StateHistory.saveWhenIdle()
 	}
 
 	#getAppropriateStore<T extends Wire | Piece>(r: T): StateSet<T> {
@@ -25,9 +28,10 @@ const State = new (class {
 	}
 
 	removeWiresConnectedTo(dot: Dot) {
-		;[...this.wires.values()].forEach((wire) => {
+		for (const wire of this.wires) {
 			if (!!wire.isConnectedTo(dot)) this.wires.delete(wire)
-		})
+		}
+		StateHistory.saveWhenIdle()
 	}
 
 	/**
@@ -39,28 +43,25 @@ const State = new (class {
 		// Automatically disconnects if wire
 		if (!(any instanceof Wire)) any.destroy()
 		this.delete(any)
+		StateHistory.saveWhenIdle()
 	}
 
 	createWire(from: Dot, to: Dot, name = '') {
 		// TODO check if duplicate wire
 		this.wires.add(new Wire({ to, from, name }))
+		StateHistory.saveWhenIdle()
 	}
 
 	/**
 	 * Structural, only reactive to change in pieces
 	 */
 	dots = $derived.by(() => {
-		const dotList: Dot[] = []
-		for (const piece of this.pieces) {
-			// We know the dot structure won't change, so let's not track
-			// anything here
-			untrack(() => {
-				for (const dot of piece.dots) {
-					dotList.push(dot)
-				}
-			})
-		}
-		return new StateSet(dotList)
+		const pieceArray = [...this.pieces]
+		// We know the dot structure won't change, so let's not track
+		// anything here
+		return untrack(() => {
+			return new StateSet(getDotsFromPieceList(pieceArray))
+		})
 	})
 
 	clearState() {
@@ -70,8 +71,30 @@ const State = new (class {
 				this.destroy(each)
 			}
 		})
+		// StateHistory.saveWhenIdle()
+	}
+
+	getWiresAttachedToGates(gates: Gate<any, any>[]): Wire[] {
+		const dots = new Set(getDotsFromPieceList(gates))
+		const wires: Wire[] = []
+		for (const wire of this.wires) {
+			if (dots.has(wire.from) && dots.has(wire.to)) {
+				wires.push(wire)
+			}
+		}
+		return wires
 	}
 })()
+
+function getDotsFromPieceList(pieceList: Piece[]): Dot[] {
+	const dotList: Dot[] = []
+	for (const piece of pieceList) {
+		for (const dot of piece.dots) {
+			dotList.push(dot)
+		}
+	}
+	return dotList
+}
 
 // @ts-ignore
 globalThis.listState = () => {

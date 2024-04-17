@@ -7,16 +7,24 @@ export class Box {
 	}
 
 	hasWithin(v: Vec) {
-		return this.from.inside(v) && this.to.outside(v)
+		return this.from.lessThan(v) && this.to.greaterThan(v)
 	}
 
 	centre() {
 		return Box.centre(this.dimensions)
 	}
 
+	shiftLowerRight(v : Vec) {
+		return new Box(this.from, this.to.add(v))
+	}
+
 	static centre(vec: Vec) {
 		const half = vec.times(1 / 2)
 		return new Box(half.times(-1), half)
+	}
+
+	add(v : Vec) {
+		return new Box(this.from.add(v), this.to.add(v))
 	}
 
 	readonly from: Vec

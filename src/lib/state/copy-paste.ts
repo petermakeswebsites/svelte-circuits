@@ -27,9 +27,10 @@ export function copy(gateList: Gate<any, any>[], wireList: Wire[]): StateString 
 			throw new Error(`Connector has no parent gate`)
 		}
 		const connectorID = parentGate.dots.indexOf(dot)
-		const parentID = reverse.get(dot.parent)
+		const parentID = reverse.get(parentGate)
 		if (parentID === undefined) {
-			console.error(dot)
+
+			console.error({rev: [...reverse][0][0].position.vec, gate :parentGate.position.vec})
 			throw new Error(`Parent ID not working`)
 		}
 		return [parentID, connectorID]
@@ -59,7 +60,7 @@ export function copy(gateList: Gate<any, any>[], wireList: Wire[]): StateString 
 	})
 }
 
-export function paste(tplStr: StateString) {
+export function paste(tplStr: StateString, offset = new Vec()) {
 	const tpl = JSON.parse(tplStr, (key, value) => {
 		if (typeof value === 'string' && value.substring(0, 8) === 'function(') {
 			// This is an eval-like feature, and should be used cautiously
@@ -67,11 +68,14 @@ export function paste(tplStr: StateString) {
 		}
 		return value
 	}) as StateJSONv1
+
+	
+
 	const newGates = tpl.gates.map(({ template, position }) => {
 		const vec = Vec.fromArr(position)
 		if (typeof template === 'string') {
 			if (template in Templates) {
-				const temp = Templates[template as keyof typeof Templates]({ vec, name: '' })
+				const temp = Templates[template as keyof typeof Templates]({ vec: vec.add(offset), name: '' })
 				return State.add(new Gate(temp as GateConstructor<any, any>))
 			} else {
 				throw new Error('Template not recognised: ' + template)

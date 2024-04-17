@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { StubDirection } from '$lib/connections/dot.svelte'
+	import { StubDirection } from '$lib/connections/stub'
 	import { stubWidth } from '$lib/constants/stub-width'
 	import { Vec } from '$lib/position/vec'
 	import { toRad } from '$lib/utils/math'
