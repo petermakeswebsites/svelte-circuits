@@ -38,7 +38,6 @@
 			SelectionBox.transfer()
 			SelectionBox.done()
 		},
-		// @ts-expect-error
 		tap: () => Selected.list.clear()
 	}}
 	fill="transparent"

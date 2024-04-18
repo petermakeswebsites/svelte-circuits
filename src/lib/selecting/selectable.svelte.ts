@@ -9,6 +9,8 @@ import { untrack } from 'svelte'
 import { Set as StateSet } from 'svelte/reactivity'
 import { Box } from './box'
 import { StateHistory } from '$lib/state/history.svelte'
+import type { IsEmptyArray } from '$lib/utils/type-helpers'
+import { ARROWKEY_DRAG, ARROWKEY_DRAG_SHIFT } from '$lib/constants/arrowkey-drag'
 
 export const Selected = new (class {
 	list = new StateSet<Selectable>()
@@ -22,7 +24,6 @@ export const Selected = new (class {
 	}
 
 	clear() {
-		// @ts-expect-error
 		this.list.clear()
 	}
 
@@ -106,14 +107,8 @@ const gatesOnly = $derived.by(() => {
 	return newArr
 })
 
-export function runActionOnSelected(key: keyof Actions) {
-	for (const selected of selectedArray) {
-		selected._run(key)
-	}
-}
-
-export function copySelected() {
-	navigator.clipboard.writeText(copy(gatesOnly, State.getWiresAttachedToGates(gatesOnly)))
+export function getSelected() {
+	return copy(gatesOnly, State.getWiresAttachedToGates(gatesOnly))
 }
 
 export function selectAll() {
@@ -122,8 +117,28 @@ export function selectAll() {
 	}
 }
 
+export function keyDrag(draggable: Draggable) {
+	return () => {}
+}
 type Actions = {
 	delete?: () => void
+	key?: (key: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown", shift: boolean) => void
+}
+
+/**
+ * Helps to allow autocomplete when calling {@link runActionOnSelected}
+ */
+type ActionParams<T extends keyof Actions> =
+	IsEmptyArray<Parameters<NonNullable<Actions[T]>>> extends true ? [key: T] : [key: T, params: Parameters<NonNullable<Actions[T]>>]
+
+/**
+ * Call a certain selectable callback on all selected items
+ * @param args 
+ */
+export function runActionOnSelected<T extends keyof Actions>(...args: ActionParams<T>) {
+	for (const selected of selectedArray) {
+		selected._run<T>(...args)
+	}
 }
 
 export class Selectable {
@@ -144,8 +159,10 @@ export class Selectable {
 		this.selected = true
 	}
 
-	_run(action: keyof Actions) {
-		this.actions[action]?.()
+	_run<T extends keyof Actions>(...[key, params]: ActionParams<T>) {
+		const fn = this.actions[key]
+		// @ts-expect-error not sure how to solve this one
+		if (fn) fn(...(params ? params : []))
 	}
 
 	toggle() {
@@ -161,5 +178,26 @@ export class Draggable extends Selectable {
 		super(actions)
 		this.associatedPosition = associatedPosition
 		this.parent = parent
+	}
+}
+
+export function setupKeyDrag(position : Position) : Actions["key"] {
+	return (key, shift) => {
+		const amt = shift ? ARROWKEY_DRAG_SHIFT : ARROWKEY_DRAG
+		switch (key) {
+			case 'ArrowLeft':
+				position.move(new Vec(-amt, 0))
+				break
+			case 'ArrowRight':
+				position.move(new Vec(amt, 0))
+				break
+				
+			case 'ArrowUp':
+				position.move(new Vec(0, -amt))
+				break
+			case 'ArrowDown':
+				position.move(new Vec(0, amt))
+				break
+		}
 	}
 }

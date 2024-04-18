@@ -13,3 +13,5 @@ export function lengthMap<T extends number, R, U>(arr : TupleType<T,R>, callback
     // @ts-expect-error
     return arr.map(callback) as TupleType<T, U>
 }
+
+export type IsEmptyArray<T extends any[]> = T extends [] ? true : false;

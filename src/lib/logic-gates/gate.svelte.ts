@@ -3,7 +3,7 @@ import type { StubDirection } from "$lib/connections/stub"
 import { Position } from "$lib/position/position.svelte"
 import { Vec, type VecSerialised } from "$lib/position/vec"
 import { Box, type BoxSerialised } from "$lib/selecting/box"
-import { Draggable } from "$lib/selecting/selectable.svelte"
+import { Draggable, setupKeyDrag } from "$lib/selecting/selectable.svelte"
 import State from "$lib/state/state.svelte"
 import { every } from "$lib/utils/rune-every"
 import { type TupleType, lengthMap, type NumericRange } from "$lib/utils/type-helpers"
@@ -81,7 +81,8 @@ export class Gate<T extends number, R extends number> {
 			{
 				delete: () => {
 					State.destroy(this)
-				}
+				},
+				key: setupKeyDrag(this.position)
 			},
 			this.position,
 			this

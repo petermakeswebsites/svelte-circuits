@@ -20,7 +20,7 @@ export class Matrix {
 	 * @returns
 	 * @throws
 	 */
-	inverse() {
+	get inverse() {
 		const [a, b, c, d, e, f] = this.vals
 
 		const determinant = a * d - b * c
@@ -50,34 +50,21 @@ export class Matrix {
 		return new Matrix(...mutvals)
 	}
 
-	static createTranslationMatrix(v : Vec): Matrix {
-		return new Matrix(1, 0, 0, 1, v[0], v[1])
-	}
-
-	static createScaleMatrix(scale: number): Matrix {
-		return new Matrix(scale, 0, 0, scale, 0, 0)
-	}
-
-	multiply(B: Matrix): Matrix {
-		return new Matrix(
-			this.vals[0] * B.vals[0] + this.vals[2] * B.vals[1],
-			this.vals[1] * B.vals[0] + this.vals[3] * B.vals[1],
-			this.vals[0] * B.vals[2] + this.vals[2] * B.vals[3],
-			this.vals[1] * B.vals[2] + this.vals[3] * B.vals[3],
-			this.vals[0] * B.vals[4] + this.vals[2] * B.vals[5] + this.vals[4],
-			this.vals[1] * B.vals[4] + this.vals[3] * B.vals[5] + this.vals[5]
-		)
-	}
-
 	zoomAtPoint(scale: number, v : Vec): Matrix {
-		const translateToOrigin = Matrix.createTranslationMatrix(v.times(-1))
-		const scaleMatrix = Matrix.createScaleMatrix(scale)
-		const translateBack = Matrix.createTranslationMatrix(v)
+		v.times(-1).times(scale)
+		const scaler = this.immodify(vals => {
+			vals[0] = vals[0] * scale
+			vals[3] = vals[3] * scale
+		})
 
-		let tempMatrix = translateToOrigin.multiply(scaleMatrix)
-		let newMatrix = tempMatrix.multiply(translateBack)
+		const invertedVec = this.inverse.applyToVec(v)
 
-		return newMatrix
+		const offsetVec = scaler.applyToVec(invertedVec)
+		const difference = offsetVec.subtract(v)
+		return scaler.immodify(vals => {
+			vals[4] = vals[4] - difference.x
+			vals[5] = vals[5] - difference.y
+		})
 	}
 
 	get a() {

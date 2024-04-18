@@ -73,7 +73,7 @@
 			},
 			end() {
 				SenderReceiver.processSending()
-			}
+			},
 		}}
 	>
 		<DotViewCircles />

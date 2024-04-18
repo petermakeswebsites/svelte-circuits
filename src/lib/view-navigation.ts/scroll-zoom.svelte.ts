@@ -15,8 +15,14 @@ export const ZoomScroll = new (class {
 	 * taking screen things (like mouse location) and converting them into
 	 * usable locations for SVGs to go to
 	 */
-	inverseMatrix = $derived(this.matrix.inverse())
+	inverseMatrix = $derived(this.matrix.inverse)
 
+	translate(e : Vec) {
+		this.matrix = this.matrix.immodify(vals => {
+			vals[4] -= e.x
+			vals[5] -= e.y
+		})
+	}
 
 	constructor() {
 		document.addEventListener(
@@ -24,13 +30,11 @@ export const ZoomScroll = new (class {
 			(e) => {
 				e.preventDefault()
 				const vec2client = new Vec(e.clientX, e.clientY)
+				const deltaVec = new Vec(e.deltaX, e.deltaY)
 				if (e.ctrlKey) {
-					this.matrix = this.matrix.zoomAtPoint(1 + (this.ZOOM_SCALAR * (e.deltaX + e.deltaY)), vec2client)
+					this.matrix = this.matrix.zoomAtPoint(1 - (this.ZOOM_SCALAR * (e.deltaX + e.deltaY)), vec2client)
 				} else {
-					this.matrix = this.matrix.immodify(vals => {
-						vals[4] -= e.deltaX
-						vals[5] -= e.deltaY
-					})
+					this.translate(deltaVec)
 				}
 			},
 			{ passive: false }

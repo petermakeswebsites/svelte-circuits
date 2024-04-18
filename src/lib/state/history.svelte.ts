@@ -3,6 +3,7 @@ import { Gate } from '../logic-gates/gate.svelte'
 import State from './state.svelte'
 import { tick } from 'svelte'
 import { playBeep } from '$lib/audio/beep'
+import { compress, decompress } from '$lib/utils/compression'
 
 class HistoryNode<T> {
 	previousNode?: HistoryNode<T>
@@ -102,8 +103,8 @@ export const StateHistory = new (class {
 
 let internalHashChange = false
 
-function saveHash(str: string) {
-	const encodedData = btoa(str)
+async function saveHash(str: string) {
+	const encodedData = await compress(str)
 
 	// Set the encoded string as the hash (fragment identifier) of the URL
 	window.location.hash = encodedData
@@ -125,7 +126,7 @@ window.addEventListener('hashchange', function () {
 })
 
 if (window.location.hash.substring(1)) {
-	setTimeout(() => {
-		paste(atob(window.location.hash.substring(1)))
+	setTimeout(async () => {
+		paste(await decompress(window.location.hash.substring(1)))
 	})
 }

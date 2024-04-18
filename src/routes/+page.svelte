@@ -22,6 +22,8 @@
 	import '$lib/keyboard-shortcuts/keyboard-shortcuts'
 	import Rect from '../components/Rect.svelte'
 	import { Box } from '$lib/selecting/box'
+	import Clipboard from '../components/Clipboard.svelte'
+	import PanScreen from '../components/PanScreen.svelte'
 
 	let contextMenuAt: null | Vec = $state(null)
 
@@ -63,5 +65,7 @@
 		{/each}
 	</g>
 	<ContextMenu bind:contextMenuAt />
+	<PanScreen />
 </svg>
+<Clipboard />
 <PlayPauseReset />

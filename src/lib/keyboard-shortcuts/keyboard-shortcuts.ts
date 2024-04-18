@@ -1,5 +1,5 @@
 import { Vec } from '$lib/position/vec'
-import { Selected, copySelected, runActionOnSelected, selectAll } from '$lib/selecting/selectable.svelte'
+import { Selected, runActionOnSelected, selectAll } from '$lib/selecting/selectable.svelte'
 import { copy, paste } from '$lib/state/copy-paste'
 import { StateHistory } from '$lib/state/history.svelte'
 import State from '$lib/state/state.svelte'
@@ -11,24 +11,11 @@ globalThis.addEventListener('keydown', function (event) {
 		case 'Backspace':
 			runActionOnSelected('delete')
 			break
-		case 'c':
-			if (event.metaKey || event.ctrlKey) {
-				event.preventDefault()
-				copySelected()
-			}
-			break
-		case 'v':
-			if (event.metaKey || event.ctrlKey) {
-				this.navigator.clipboard.readText().then((text) => {
-					Selected.clear()
-					if (text) {
-						const ret = paste(text, new Vec(20, 20))
-						for (const gate of ret) {
-							Selected.select(gate.selectable)
-						}
-					}
-				})
-			}
+		case 'ArrowLeft':
+		case 'ArrowRight':
+		case 'ArrowUp':
+		case 'ArrowDown':
+			runActionOnSelected("key", [event.key, event.shiftKey])
 			break
 		case 'a':
 			if (event.metaKey || event.ctrlKey) {
@@ -40,7 +27,7 @@ globalThis.addEventListener('keydown', function (event) {
 				event.shiftKey
 				event.preventDefault()
 				if (event.shiftKey) {
-                    StateHistory.redo()
+					StateHistory.redo()
 				} else {
 					StateHistory.undo()
 				}

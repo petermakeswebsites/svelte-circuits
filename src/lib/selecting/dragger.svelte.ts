@@ -1,6 +1,8 @@
 import { Vec } from '$lib/position/vec'
 import { ZoomScroll } from '$lib/view-navigation.ts/scroll-zoom.svelte'
 
+const LONG_TAP_MS = 400
+
 type FnList<T> = {
 	/**
 	 * Return some info you want passed to the move function
@@ -8,22 +10,20 @@ type FnList<T> = {
 	 * @returns
 	 */
 	begin?: (pos: Vec, element?: SVGElement) => T
-	move?: (options : {delta : Vec, rel: Vec, abs: Vec, extra : T | undefined}) => void
-	// delta?: (delta: Vec) => void
-	// relative?: (rel: Vec) => void
-	// abs?: T extends undefined ? (abs: Vec) => void : (abs: Vec, extra: T) => void
+	move?: (options: { delta: Vec; rel: Vec; abs: Vec; extra: T | undefined }) => void
 	dragcb?: (dragging: boolean) => void
 	end?: (pos: Vec) => void
 	/**
 	 * Non-dragging tap
 	 * @returns
 	 */
-	tap?: (pos : Vec) => void
-	applyZoomTransforms? : boolean
+	tap?: (pos: Vec) => void
+	longtap?: (pos: Vec) => void
+	applyZoomTransforms?: boolean
 }
 export function dragger<T>(
 	element: SVGElement,
-	{ begin: beginFn, move: moveFn, dragcb, end, tap, applyZoomTransforms = true }: FnList<T>
+	{ begin: beginFn, move: moveFn, dragcb, end, tap, longtap, applyZoomTransforms = true }: FnList<T>
 ) {
 	let dragging = false
 	let isDown = false
@@ -32,29 +32,57 @@ export function dragger<T>(
 
 	let extra: T | undefined
 
+	let longtapTimer: ReturnType<typeof setTimeout> = -1
+	let longtapped = false
+	function cancelLongtap() {
+		clearTimeout(longtapTimer)
+	}
+
 	let last = new Vec()
 	let first = new Vec()
 	let beginReset = true
+
 	/**
 	 *
 	 * @param {PointerEvent} evt
 	 */
 	function down(evt: PointerEvent) {
 		isDown = true
+		const evtVec = new Vec(evt.x, evt.y)
+		deltaAccumulator = new Vec()
+
+		if (longtap)
+			longtapTimer = setTimeout(() => {
+				longtap?.(evtVec)
+				longtapped = true
+			}, LONG_TAP_MS)
+
 		element.setPointerCapture(evt.pointerId)
-		last = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(new Vec(evt.x, evt.y)) : new Vec(evt.x, evt.y)
+		last = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(evtVec) : evtVec
 		first = last
 	}
 
-	let nextMove : ReturnType<typeof requestAnimationFrame> = -1
+	let nextMove: ReturnType<typeof requestAnimationFrame> = -1
 	let pendingNextFrame = false
+	function cancelPendingFrame() {
+		pendingNextFrame = false
+		cancelAnimationFrame(nextMove)
+	}
+
+	let deltaAccumulator = new Vec()
 	function move(evt: PointerEvent) {
 		if (!isDown) return
-		const evtVec = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(new Vec(evt.x, evt.y)) : new Vec(evt.x, evt.y)
+		evt.preventDefault()
+
+		cancelLongtap()
+		if (longtapped) return
+
+		const evtVec = new Vec(evt.x, evt.y)
+		const transformedEvtVec = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(evtVec) : evtVec
 
 		// This is when the true beginning actually fires
 		if (beginReset) {
-			const rtn = beginFn?.(evtVec, element)
+			const rtn = beginFn?.(transformedEvtVec, element)
 			extra = rtn
 			beginReset = false
 		}
@@ -62,42 +90,43 @@ export function dragger<T>(
 		dragging = true
 		dragcb?.(true)
 
-		last = evtVec
-		// absFn?.(evtVec.add(customOffset), extra as T)
-		// deltaFn?.(delta.add(customOffset))
-		// relativeFn?.(evtVec.subtract(first).subtract(customOffset))
+		const thisDelta = transformedEvtVec.subtract(last)
+		deltaAccumulator = deltaAccumulator.add(thisDelta)
+		last = transformedEvtVec
+
 		if (pendingNextFrame) {
-			console.log("Dropping unnecessary move")
+			console.log('Dropping unnecessary move')
 			return
 		}
+
+
 		pendingNextFrame = true
 		nextMove = requestAnimationFrame(() => {
 			pendingNextFrame = false
-			const delta = evtVec.subtract(last)
-			const abs = evtVec
-			const rel = evtVec.subtract(first)
-			moveFn?.({abs,delta,rel,extra})
+			const delta = deltaAccumulator
+			deltaAccumulator = new Vec()
+			const abs = transformedEvtVec
+			const rel = transformedEvtVec.subtract(first)
+			moveFn?.({ abs, delta, rel, extra })
 		})
 	}
 
 	function up(evt: PointerEvent) {
 		element.releasePointerCapture(evt.pointerId)
-		if (pendingNextFrame) {
-			cancelAnimationFrame(nextMove)
-			pendingNextFrame = false
-		}
+		cancelPendingFrame()
+		cancelLongtap()
 		const evtVec = applyZoomTransforms ? ZoomScroll.inverseMatrix.applyToVec(new Vec(evt.x, evt.y)) : new Vec(evt.x, evt.y)
 		if (!dragging) {
-			if (isDown) tap?.(evtVec)
-			isDown = false
-			return
-		}
-		isDown = false
-		beginReset = true
-		if (end) end(evtVec)
+			if (isDown && !longtapped) tap?.(evtVec)
+		} else {
+			beginReset = true
+			if (end) end(evtVec)
 
-		dragging = false
-		dragcb?.(false)
+			dragging = false
+			dragcb?.(false)
+		}
+		longtapped = false
+		isDown = false
 	}
 
 	element.addEventListener('pointerdown', down)
