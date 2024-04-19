@@ -10,11 +10,9 @@
 	import Source from './Source.svelte'
 	let { gate, onDrop = (position) => {} }: { gate: Gate<T, R>; onDrop?: (position : Position) => void } = $props()
 
-    // $inspect(gate.bodyLive)
-
 </script>
 
-<Group pos={gate.position.vec}>
+<Group pos={gate.position.vec} data-testid="gate {gate.template}">
 	<!-- <Text x={0} y={-10} fontSize="13px">AND</Text> -->
 	{#if gate.template == "source"}
 	<Source />

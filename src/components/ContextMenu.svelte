@@ -47,13 +47,22 @@
 </script>
 
 {#if display && contextMenuAt}
-	<rect x={0} y={0} use:accessible={{label: "backdrop", onclick: () => contextMenuAt = null}} width="100%" height="100%" fill="transparent" />
-	<circle cx={contextMenuAt.x} cy={contextMenuAt.y} r={150} fill="#fff"></circle>
-	{#each display as entry}
-		<g>
-			<GateTemplateView gateConstructor={entry.rendered} onDrop={entry.create} />
-		</g>
-	{/each}
+	<g data-testid="contextmenu">
+		<rect
+			x={0}
+			y={0}
+			use:accessible={{ label: 'backdrop', onclick: () => (contextMenuAt = null) }}
+			width="100%"
+			height="100%"
+			fill="transparent"
+		/>
+		<circle cx={contextMenuAt.x} cy={contextMenuAt.y} r={150} fill="#fff"></circle>
+		{#each display as entry}
+			<g>
+				<GateTemplateView gateConstructor={entry.rendered} onDrop={entry.create} />
+			</g>
+		{/each}
+	</g>
 {/if}
 
 <style>

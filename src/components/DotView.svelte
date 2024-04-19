@@ -65,10 +65,7 @@
 		class:receiving={hovering}
 		use:dragger={{
 			move({rel}) {
-				console.log('rel', rel)
-				console.log('dot', dot.position.global)
 				const newPosition = dot.position.popToGlobal().move(rel)
-				console.log('new', newPosition.global)
 				SenderReceiver.updateDragPosition(dot, newPosition)
 			},
 			end() {
