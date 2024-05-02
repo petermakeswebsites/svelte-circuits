@@ -111,7 +111,7 @@ async function saveHash(str: string) {
 	internalHashChange = true
 }
 
-window.addEventListener('hashchange', function () {
+globalThis.addEventListener('hashchange', function () {
 	if (!internalHashChange) {
 		// Handle external hash changes here
 		console.log('Handling extern')
@@ -125,8 +125,8 @@ window.addEventListener('hashchange', function () {
 	internalHashChange = false
 })
 
-if (window.location.hash.substring(1)) {
+if (globalThis.location.hash.substring(1)) {
 	setTimeout(async () => {
-		paste(await decompress(window.location.hash.substring(1)))
+		paste(await decompress(globalThis.location.hash.substring(1)))
 	})
 }

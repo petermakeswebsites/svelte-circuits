@@ -11,7 +11,7 @@
 	import GateView from '../components/GateView.svelte'
 	import { Gate } from '$lib/logic-gates/gate.svelte'
 	import '$lib/state/pulse.svelte'
-	import PlayPauseReset from '../components/PlayPauseReset.svelte'
+	import PlayPauseReset from '../components/Controls.svelte'
 	import '$lib/state/copy-paste'
 	import Backdrop from '../components/Backdrop.svelte'
 	import { Hotkeys } from '$lib/utils/hotkeys.svelte'
@@ -24,7 +24,7 @@
 	import { Box } from '$lib/selecting/box'
 	import Clipboard from '../components/Clipboard.svelte'
 	import PanScreen from '../components/PanScreen.svelte'
-
+	import HelpView from '../components/HelpView.svelte'
 	let contextMenuAt: null | Vec = $state(null)
 
 	// $inspect(Hotkeys.currentlyDown)
@@ -69,3 +69,4 @@
 </svg>
 <Clipboard />
 <PlayPauseReset />
+<HelpView />

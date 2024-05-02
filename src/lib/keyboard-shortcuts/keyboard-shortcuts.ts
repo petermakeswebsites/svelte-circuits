@@ -4,6 +4,7 @@ import { copy, paste } from '$lib/state/copy-paste'
 import { StateHistory } from '$lib/state/history.svelte'
 import State from '$lib/state/state.svelte'
 import { Hotkeys } from '$lib/utils/hotkeys.svelte'
+import { Help } from '../../components/HelpView.svelte'
 
 globalThis.addEventListener('keydown', function (event) {
 	switch (event.key) {
@@ -21,6 +22,9 @@ globalThis.addEventListener('keydown', function (event) {
 			if (event.metaKey || event.ctrlKey) {
 				selectAll()
 			}
+			break
+		case 'h':
+			Help.toggle()
 			break
 		case 'z':
 			if (event.metaKey || event.ctrlKey) {
