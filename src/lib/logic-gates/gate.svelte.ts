@@ -1,35 +1,56 @@
-import { Dot } from "$lib/connections/dot.svelte"
-import type { StubDirection } from "$lib/connections/stub"
-import { Position } from "$lib/position/position.svelte"
-import { Vec, type VecSerialised } from "$lib/position/vec"
-import { Box, type BoxSerialised } from "$lib/selecting/box"
-import { Draggable, setupKeyDrag } from "$lib/selecting/selectable.svelte"
-import State from "$lib/state/state.svelte"
-import { every } from "$lib/utils/rune-every"
-import { type TupleType, lengthMap, type NumericRange } from "$lib/utils/type-helpers"
-import { type Evaluation, createEvaluation } from "./gate-formula"
+import { Dot } from '$lib/connections/dot.svelte'
+import type { StubDirection } from '$lib/connections/stub'
+import { Position } from '$lib/position/position.svelte'
+import { Vec, type VecSerialised } from '$lib/position/vec'
+import { Box, type BoxSerialised } from '$lib/selecting/box'
+import { Draggable, setupKeyDrag } from '$lib/selecting/selectable.svelte'
+import State from '$lib/state/state.svelte'
+import { every } from '$lib/utils/rune-every'
+import { type TupleType, lengthMap, type NumericRange } from '$lib/utils/type-helpers'
+import { type Evaluation, createEvaluation } from './gate-formula'
 
+/**
+ * Essentially the template for a gate. You can actually create your own gates
+ * with this with your own custom logic.
+ */
 export type GateConstructor<T extends number, R extends number> = {
-	vec : Vec
+	/** Initial position of the gate */
+	vec: Vec
+	/** Name of the gate, e.g. `nor`, `xor`... */
 	name: string
+	/** SVG paths to draw the gate */
 	paths: string[]
+	/** Bounding box of the gate, */
 	box: Box
+	/** Whether it does anything or is just a dead picture */
 	dummy: boolean
+	/** Name of the gate to save serialisation space * */
 	template?: string
+	/** Inputs of gate */
 	inputs: TupleType<
 		T,
 		{
+			/** Location of the input */
 			vec: Vec
 			name: string
+			/** Direction of the stub sticking out of the dot */
 			stub: StubDirection
 		}
 	>
+	/** Inputs of gate */
 	outputs: TupleType<
 		R,
 		{
+			/** Location of the gate * */
 			vec: Vec
 			name: string
 			stub: StubDirection
+			/**
+			 * Calculates whether the output should emit
+			 *
+			 * @param args The input live values
+			 * @returns Whether it should emit or not
+			 */
 			emitter: (...args: TupleType<T, boolean>) => boolean
 		}
 	>
@@ -51,6 +72,7 @@ export class Gate<T extends number, R extends number> {
 	position: Position
 	name: string
 	readonly template: string | GateConstructor<T, R>
+
 	constructor(gate: GateConstructor<T, R>) {
 		if (gate.template) {
 			this.template = gate.template
@@ -98,6 +120,7 @@ export class Gate<T extends number, R extends number> {
 	readonly paths: string[]
 
 	readonly selectable
+
 	destroy() {
 		for (const dot of this.dots) {
 			dot.destroy()
@@ -127,7 +150,7 @@ export type GateSerialised<T extends number, R extends number> = {
 
 export function createGateTemplateMaker<T extends number, R extends number>(
 	serialised: GateSerialised<T, R>
-): (settings: { vec : Vec; name: string; dummy?: boolean }) => GateConstructor<T, R> {
+): (settings: { vec: Vec; name: string; dummy?: boolean }) => GateConstructor<T, R> {
 	const inputs = lengthMap(serialised.inputs, (input) => ({
 		name: input.name,
 		vec: Vec.fromArr(input.vec),
@@ -142,16 +165,16 @@ export function createGateTemplateMaker<T extends number, R extends number>(
 	}))
 
 	const paths = serialised.paths
-	const box = serialised.box || Box.centre(new Vec(50,50)).centre().toArr()
+	const box = serialised.box || Box.centre(new Vec(50, 50)).centre().toArr()
 
-	return ({ vec, name, dummy = false }: { vec : Vec; name: string; dummy?: boolean }) => {
+	return ({ vec, name, dummy = false }: { vec: Vec; name: string; dummy?: boolean }) => {
 		const gateConstructor: GateConstructor<T, R> = {
 			inputs,
 			outputs,
 			name,
 			paths,
 			vec,
-			box : Box.fromArr(box),
+			box: Box.fromArr(box),
 			template: serialised.template,
 			dummy
 		}

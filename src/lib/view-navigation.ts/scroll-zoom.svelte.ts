@@ -1,5 +1,4 @@
 import { Vec } from '$lib/position/vec'
-import { untrack } from 'svelte'
 import { Matrix } from './matrix'
 
 export const ZoomScroll = new (class {
@@ -17,10 +16,14 @@ export const ZoomScroll = new (class {
 	 */
 	inverseMatrix = $derived(this.matrix.inverse)
 
-	translate(e : Vec) {
+	/**
+	 * Translate the global {@link matrix} by the vec supplied
+	 * @param vec 
+	 */
+	translate(vec : Vec) {
 		this.matrix = this.matrix.immodify(vals => {
-			vals[4] -= e.x
-			vals[5] -= e.y
+			vals[4] -= vec.x
+			vals[5] -= vec.y
 		})
 	}
 
@@ -31,6 +34,8 @@ export const ZoomScroll = new (class {
 				e.preventDefault()
 				const vec2client = new Vec(e.clientX, e.clientY)
 				const deltaVec = new Vec(e.deltaX, e.deltaY)
+
+				// Ctrl key is what browsers use to signify that it's a scroll kind of zoom
 				if (e.ctrlKey) {
 					this.matrix = this.matrix.zoomAtPoint(1 - (this.ZOOM_SCALAR * (e.deltaX + e.deltaY)), vec2client)
 				} else {

@@ -6,8 +6,8 @@ import { Connector } from './connector.svelte'
 import { StubDirection } from './stub'
 
 /**
- * The Dot is a higher level class. It contains connection, location and view
- * information.
+ * The Dot is a higher level abstraction of a connector. It contains connection,
+ * location and view information.
  */
 export class Dot {
 	readonly connector: Connector
@@ -15,6 +15,7 @@ export class Dot {
 	readonly name: string
 	readonly stub: StubDirection
 	readonly parent: Gate<any, any>
+
 	constructor({
 		name = '',
 		vec = new Vec(0),

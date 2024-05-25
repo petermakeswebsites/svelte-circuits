@@ -1,4 +1,3 @@
-import { untrack } from 'svelte'
 import { gridspace } from '../constants/grid'
 import { Vec } from './vec'
 
@@ -43,7 +42,7 @@ export class Position {
 	}
 
 	toArr() : readonly [x : number, y : number] {
-		return untrack(() => this.global.toArr())
+		return this.global.toArr()
 	}
 
 	static fromArr(pos: [x: number, y: number]) {

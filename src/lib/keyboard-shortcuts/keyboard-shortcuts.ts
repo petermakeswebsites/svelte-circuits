@@ -1,9 +1,5 @@
-import { Vec } from '$lib/position/vec'
-import { Selected, runActionOnSelected, selectAll } from '$lib/selecting/selectable.svelte'
-import { copy, paste } from '$lib/state/copy-paste'
+import { runActionOnSelected, selectAll } from '$lib/selecting/selectable.svelte'
 import { StateHistory } from '$lib/state/history.svelte'
-import State from '$lib/state/state.svelte'
-import { Hotkeys } from '$lib/utils/hotkeys.svelte'
 import { Help } from '../../components/HelpView.svelte'
 
 globalThis.addEventListener('keydown', function (event) {

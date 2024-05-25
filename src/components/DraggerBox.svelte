@@ -34,7 +34,7 @@
 			Selected.move(rel, selectable)
 		},
 		tap() {
-			selectable?.selectOnly()
+			if (selectable) Selected.selectOnly(selectable)
 			onNonDraggingClick?.()
 		},
 		end() {

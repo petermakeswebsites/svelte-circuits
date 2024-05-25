@@ -1,5 +1,4 @@
-import { Set as StateSet, Map as StateMap } from 'svelte/reactivity'
-import { untrack } from 'svelte'
+import { Set as StateSet } from 'svelte/reactivity'
 import { EmittanceSuppressor } from './emittance-validation.svelte'
 import { Clusters } from './clusters.svelte'
 import type { Gate } from '$lib/logic-gates/gate.svelte'

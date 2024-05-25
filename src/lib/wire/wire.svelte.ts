@@ -20,7 +20,7 @@ export class Wire {
 		}
 	}
 
-	bodyLive = $derived(this.from?.connector.isLive && this.to?.connector.isLive)
+	bodyLive = $derived(!!(this.from?.connector.isLive && this.to?.connector.isLive))
 
 	readonly selectable = new Selectable({
 		delete: () => {

@@ -1,5 +1,4 @@
 import { Set as StateSet } from 'svelte/reactivity'
-import { untrack } from 'svelte'
 import type { Dot } from '$lib/connections/dot.svelte'
 import { EmittanceSuppressor } from '$lib/connections/emittance-validation.svelte'
 import type { Gate } from '$lib/logic-gates/gate.svelte'
@@ -59,9 +58,7 @@ const State = new (class {
 		const pieceArray = [...this.pieces]
 		// We know the dot structure won't change, so let's not track
 		// anything here
-		return untrack(() => {
-			return new StateSet(getDotsFromPieceList(pieceArray))
-		})
+		return new Set(getDotsFromPieceList(pieceArray))
 	})
 
 	clearState() {

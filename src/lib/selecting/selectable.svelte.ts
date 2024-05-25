@@ -1,28 +1,48 @@
+import { ARROWKEY_DRAG, ARROWKEY_DRAG_SHIFT } from '$lib/constants/arrowkey-drag'
 import { Gate } from '$lib/logic-gates/gate.svelte'
 import type { Switcher } from '$lib/logic-gates/switcher.svelte'
 import type { Position } from '$lib/position/position.svelte'
 import { Vec } from '$lib/position/vec'
-import { copy, paste } from '$lib/state/copy-paste'
+import { copy } from '$lib/state/copy-paste'
+import { StateHistory } from '$lib/state/history.svelte'
 import State from '$lib/state/state.svelte'
-import { Hotkeys } from '$lib/utils/hotkeys.svelte'
-import { untrack } from 'svelte'
+import type { IsEmptyArray } from '$lib/utils/type-helpers'
 import { Set as StateSet } from 'svelte/reactivity'
 import { Box } from './box'
-import { StateHistory } from '$lib/state/history.svelte'
-import type { IsEmptyArray } from '$lib/utils/type-helpers'
-import { ARROWKEY_DRAG, ARROWKEY_DRAG_SHIFT } from '$lib/constants/arrowkey-drag'
 
+/**
+ * Global instance for handling selections
+ */
 export const Selected = new (class {
+	/**
+	 * List of current selected items
+	 */
 	list = new StateSet<Selectable>()
 
+	/**
+	 * Select an item (add to {@link list})
+	 * @param selectable
+	 */
 	select(selectable: Selectable) {
 		this.list.add(selectable)
 	}
 
+	/**
+	 * Deselect an item (remove from {@link list})
+	 * @param selectable
+	 */
 	deselect(selectable: Selectable) {
 		this.list.delete(selectable)
 	}
 
+	selectOnly(selectable : Selectable) {
+		this.clear()
+		this.select(selectable)
+	}
+
+	/**
+	 * Clear all selections
+	 */
 	clear() {
 		this.list.clear()
 	}
@@ -58,48 +78,72 @@ export const SelectionBox = new (class {
 	#from = $state<Vec>(new Vec())
 	#to = $state<Vec>(new Vec())
 	box = $derived(new Box(this.#from, this.#to))
+
+	/**
+	 * Set the box co-ordinates
+	 * @param from Co-ordinates of upper left corner
+	 * @param to Co-ordinates of lower right corner
+	 */
 	set(from: Vec, to: Vec = new Vec()) {
 		this.#from = from
 		this.#to = to
 	}
 
+	/**
+	 * Set the `to` (lower right) co-ords specifically∑
+	 * @param to
+	 */
 	setTo(to: Vec) {
 		this.#to = to
 	}
 
+	/**
+	 * Transfer all thates held in the current box
+	 * to the {@link Selected} state tracker
+	 */
 	transfer() {
 		for (const gate of this.selectedGates) {
 			Selected.select(gate)
 		}
 	}
 
+	/**
+	 * Finish with the box - resets the vectors to zero
+	 */
 	done() {
 		this.#to = new Vec()
 		this.#from = new Vec()
 	}
 
-	isOn = $derived(!(this.#from.isZeroVec && this.#to.isZeroVec))
+	get isOn() {
+		return !(this.#from.isZeroVec && this.#to.isZeroVec)
+	}
 
 	selectedGates = $derived.by(() => {
 		const selects = new Set<Selectable>()
 		const box = this.box
 		if (!this.isOn) return selects
-		untrack(() => {
-			const gates = [...State.pieces]
-			for (const gate of gates) {
-				if (box.hasWithin(gate.position.vec)) {
-					selects.add(gate.selectable)
-				}
+		const gates = [...State.pieces]
+		for (const gate of gates) {
+			if (box.hasWithin(gate.position.vec)) {
+				selects.add(gate.selectable)
 			}
-		})
+		}
 		return selects
 	})
 })()
 
-const selectedArray = $derived(new StateSet([...Selected.list, ...SelectionBox.selectedGates]))
-const gatesOnly = $derived.by(() => {
+/**
+ * Union of the globally selected list and selected items current selected
+ */
+const selectedArrayAll = $derived(new Set([...Selected.list, ...SelectionBox.selectedGates]))
+
+/**
+ * Gates of all currently selected items
+ */
+const selectedGatesOnly = $derived.by(() => {
 	const newArr: Gate<any, any>[] = []
-	for (const selected of selectedArray) {
+	for (const selected of selectedArrayAll) {
 		if (selected instanceof Draggable && selected.parent instanceof Gate) {
 			newArr.push(selected.parent)
 		}
@@ -108,7 +152,7 @@ const gatesOnly = $derived.by(() => {
 })
 
 export function getSelected() {
-	return copy(gatesOnly, State.getWiresAttachedToGates(gatesOnly))
+	return copy(selectedGatesOnly, State.getWiresAttachedToGates(selectedGatesOnly))
 }
 
 export function selectAll() {
@@ -122,7 +166,7 @@ export function keyDrag(draggable: Draggable) {
 }
 type Actions = {
 	delete?: () => void
-	key?: (key: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown", shift: boolean) => void
+	key?: (key: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown', shift: boolean) => void
 }
 
 /**
@@ -133,30 +177,25 @@ type ActionParams<T extends keyof Actions> =
 
 /**
  * Call a certain selectable callback on all selected items
- * @param args 
+ * @param args
  */
 export function runActionOnSelected<T extends keyof Actions>(...args: ActionParams<T>) {
-	for (const selected of selectedArray) {
+	for (const selected of selectedArrayAll) {
 		selected._run<T>(...args)
 	}
 }
 
 export class Selectable {
-	#selected = $derived(Selected.list.has(this))
 	public get selected() {
-		return this.#selected || selectedArray.has(this)
+		return selectedArrayAll.has(this)
 	}
+
 	public set selected(value) {
 		if (value) {
 			Selected.select(this)
 		} else {
 			Selected.deselect(this)
 		}
-	}
-
-	selectOnly() {
-		Selected.clear()
-		this.selected = true
 	}
 
 	_run<T extends keyof Actions>(...[key, params]: ActionParams<T>) {
@@ -181,7 +220,7 @@ export class Draggable extends Selectable {
 	}
 }
 
-export function setupKeyDrag(position : Position) : Actions["key"] {
+export function setupKeyDrag(position: Position): Actions['key'] {
 	return (key, shift) => {
 		const amt = shift ? ARROWKEY_DRAG_SHIFT : ARROWKEY_DRAG
 		switch (key) {
@@ -191,7 +230,7 @@ export function setupKeyDrag(position : Position) : Actions["key"] {
 			case 'ArrowRight':
 				position.move(new Vec(amt, 0))
 				break
-				
+
 			case 'ArrowUp':
 				position.move(new Vec(0, -amt))
 				break

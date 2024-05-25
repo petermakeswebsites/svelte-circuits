@@ -44,6 +44,12 @@ export class Matrix {
 		return [...this.vals]
 	}
 
+	/**
+	 * Generates an immutable copy of the matrix that can be modified
+	 * before being finalised.
+	 * @param fn 
+	 * @returns 
+	 */
 	immodify(fn: (vals: MatrixTuple) => void): Matrix {
 		const mutvals = this.toArr()
 		fn(mutvals)
