@@ -1,6 +1,5 @@
 import { ARROWKEY_DRAG, ARROWKEY_DRAG_SHIFT } from '$lib/constants/arrowkey-drag'
 import { Gate } from '$lib/logic-gates/gate.svelte'
-import type { Switcher } from '$lib/logic-gates/switcher.svelte'
 import type { Position } from '$lib/position/position.svelte'
 import { Vec } from '$lib/position/vec'
 import { copy } from '$lib/state/copy-paste'

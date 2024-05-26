@@ -40,7 +40,8 @@
 >
 	<path class="display-selection" d={drawPath} stroke-linecap="round" stroke-linejoin="round" />
 
-	<Path live={!!wire.bodyLive} path={drawPath} />
+<!--	<Path live={wire.bodyLive} path={drawPath} />-->
+	<Path live={wire.from.connector.isLive && wire.to.connector.isLive} path={drawPath} />
 	<path d={drawPath} stroke="transparent" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
 </g>
 

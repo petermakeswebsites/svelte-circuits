@@ -1,7 +1,6 @@
 import type { Connector } from './connector.svelte'
 import type { Dot } from './dot.svelte'
 import State from '$lib/state/state.svelte'
-import { EmittanceSuppressor } from './emittance-validation.svelte'
 import { findClusters } from '$lib/connections/clustering-algo'
 /**
  * So there's a tricky thing here where the state of the dots (whether they are
@@ -17,25 +16,6 @@ import { findClusters } from '$lib/connections/clustering-algo'
  */
 export const Clusters = new (class {
 	list = $derived(findClusters([...State.dots], State.wires))
-
-	/** Mark all clusters as dirty */
-	dirtify() {
-		for (const conn of this.list) {
-			conn.markDirty()
-		}
-	}
-
-	/**
-	 * Makes dirty and also resets the live state back to false. I actually
-	 * suspect this might do nothing, but CBA to think too hard about it. I
-	 * originally put it in so that in case there was some looping state that was
-	 * stuck you could un-stick it.
-	 */
-	reset() {
-		for (const conn of this.list) {
-			conn.reset()
-		}
-	}
 
 	/** Reference map to be able to find a dot's associated cluster */
 	map = $derived.by(() => {
@@ -61,39 +41,8 @@ export class Cluster {
 	 * is regenerated every time there is a change
 	 */
 	readonly dots = new Set<Dot>()
-
-	/**
-	 * Marks dirty for when there's a structural change and we need to refresh the
-	 * live status, see {@link Clusters.dirtify}
-	 */
-	markDirty() {
-		this.#done = false
-		this.#isLive = false
-	}
-
-	/** Marks dirty but without default false, see {@link Clusters.reset} */
-	reset() {
-		this.#isLive = false
-		this.#done = true
-	}
-
-	/**
-	 * To prevent redundant processing, the result is cached until marked dirty
-	 * again
-	 */
-	#done = false
-
 	/** Cached state representing whether the cluster is on or off */
-	#isLive: boolean | null = false
 	isLive = $derived.by(() => {
-		// If we're clean, return the cached value
-		if (this.#done) return this.#isLive
-
-		// In case we're in the validation phase, return false to not cause any
-		// unwanted interference (postpone proper calculation until after
-		// validation phase is over)
-		if (EmittanceSuppressor.validating) return false
-
 		let live = false
 
 		for (const dot of this.dots) {
@@ -102,26 +51,9 @@ export class Cluster {
 			}
 		}
 
-		this.#done = true
-		this.#isLive = live
-
 		return live
 	})
 }
 
-/**
- * Essentially the heartbeat of the program. Based on current states of
- * {@link Cluster.isLive}, processes the logical outcomes of all gates and
- * updates reactions accordingly. You'll note that {@link Cluster.isLive} depends
- * on the emittance of the connections within it. An astute observator you are!
- * This is a circular dependency. Which is why we only allow one pulse at a
- * time, breaking Svelte's reactivity.
- */
-export function pulse() {
-	for (const { connector } of State.dots) {
-		connector.processEmittance()
-	}
-
-	// Now that we've processed, lets do the cache again.
-	Clusters.dirtify()
-}
+// @ts-expect-error
+window.clusters = Clusters

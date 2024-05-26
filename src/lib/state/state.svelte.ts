@@ -1,9 +1,10 @@
 import { Set as StateSet } from 'svelte/reactivity'
 import type { Dot } from '$lib/connections/dot.svelte'
-import { EmittanceSuppressor } from '$lib/connections/emittance-validation.svelte'
 import type { Gate } from '$lib/logic-gates/gate.svelte'
 import { Wire } from '$lib/wire/wire.svelte'
 import { StateHistory } from './history.svelte'
+import { Playback } from '$lib/state/pulse.svelte'
+import { FrameRunner } from '$lib/utils/frame-runner'
 
 export type Piece = Gate<any, any>
 const State = new (class {
@@ -11,15 +12,42 @@ const State = new (class {
 	pieces = new StateSet<Piece>()
 	all = $derived(new StateSet([...this.wires, ...this.pieces]))
 	connectors = $derived([...this.pieces].flatMap((piece) => piece.dots).map((dot) => dot.connector))
-	add<T extends Wire | Piece>(r: T): T {
-		EmittanceSuppressor.validate(() => this.#getAppropriateStore(r).add(r))
+
+	stateFrameRunner = new FrameRunner()
+
+	queueNextPulse() {
+		this.stateFrameRunner.replaceFrame(() => {
+			Playback.setNextPulse(() => {
+				let changed = false
+				for (const connector of this.connectors) {
+					const unchanged = connector.calculateEmittance()
+					if (!unchanged) changed = true
+				}
+				for (const connector of this.connectors) {
+					connector.setEmittance()
+				}
+				if (changed) {
+					this.queueNextPulse()
+				}
+			})
+		})
+	}
+
+	triggerChangeState() {
 		StateHistory.saveWhenIdle()
+		// When the state changes, we want to
+		this.queueNextPulse()
+	}
+
+	add<T extends Wire | Piece>(r: T): T {
+		this.#getAppropriateStore(r).add(r)
+		this.triggerChangeState()
 		return r
 	}
 
 	delete<T extends Wire | Piece>(r: T) {
-		EmittanceSuppressor.validate(() => this.#getAppropriateStore(r).delete(r))
-		StateHistory.saveWhenIdle()
+		this.#getAppropriateStore(r).delete(r)
+		this.triggerChangeState()
 	}
 
 	#getAppropriateStore<T extends Wire | Piece>(r: T): StateSet<T> {
@@ -30,30 +58,29 @@ const State = new (class {
 		for (const wire of this.wires) {
 			if (!!wire.isConnectedTo(dot)) this.wires.delete(wire)
 		}
-		StateHistory.saveWhenIdle()
+		this.triggerChangeState()
 	}
 
 	/**
 	 * Destroys the renderable and any wire connecting to it. Different from
 	 * {@link delete} which simply removes them from state.
+	 *
 	 * @param any
 	 */
 	destroy(any: Piece | Wire) {
 		// Automatically disconnects if wire
 		if (!(any instanceof Wire)) any.destroy()
 		this.delete(any)
-		StateHistory.saveWhenIdle()
+		this.triggerChangeState()
 	}
 
 	createWire(from: Dot, to: Dot, name = '') {
 		// TODO check if duplicate wire
 		this.wires.add(new Wire({ to, from, name }))
-		StateHistory.saveWhenIdle()
+		this.triggerChangeState()
 	}
 
-	/**
-	 * Structural, only reactive to change in pieces
-	 */
+	/** Structural, only reactive to change in pieces */
 	dots = $derived.by(() => {
 		const pieceArray = [...this.pieces]
 		// We know the dot structure won't change, so let's not track
@@ -62,12 +89,10 @@ const State = new (class {
 	})
 
 	clearState() {
-		EmittanceSuppressor.validate(() => {
-			const all = [...this.all]
-			for (const each of all) {
-				this.destroy(each)
-			}
-		})
+		const all = [...this.all]
+		for (const each of all) {
+			this.destroy(each)
+		}
 		// StateHistory.saveWhenIdle()
 	}
 

@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      keyboard-event-key-type:
+        specifier: ^1.5.0
+        version: 1.5.0
     devDependencies:
       '@playwright/test':
         specifier: ^1.44.1
@@ -633,6 +637,9 @@ packages:
 
   js-tokens@9.0.0:
     resolution: {integrity: sha512-WriZw1luRMlmV3LGJaR6QOJjWwgLUTf89OwT2lUOyjX2dJGBwgmIkbcz+7WFZjrZM635JOIR517++e/67CP9dQ==}
+
+  keyboard-event-key-type@1.5.0:
+    resolution: {integrity: sha512-d/yMrq4BREH4isBf/Tj8aQqxP+zudhsfeA91nRVllvkxvGsM5IJVgCiQtZQ+qhM1mpZY3kAjoneUIXRvdABEWw==}
 
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
@@ -1628,6 +1635,8 @@ snapshots:
   isexe@2.0.0: {}
 
   js-tokens@9.0.0: {}
+
+  keyboard-event-key-type@1.5.0: {}
 
   kleur@4.1.5: {}
 

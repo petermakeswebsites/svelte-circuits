@@ -1,19 +1,17 @@
 import { Vec } from '$lib/position/vec'
 import type { Wire } from '$lib/wire/wire.svelte'
-import type { Connector } from '../connections/connector.svelte'
 import type { Dot } from '../connections/dot.svelte'
 import { Gate, type GateConstructor } from '../logic-gates/gate.svelte'
 import { Templates } from '../logic-gates/templates'
 import type { DotPath, StateJSONv1 } from './state-gate-parser'
 import State from './state.svelte'
 
-/**
- * Type alias for {@link StateJSONv1} stringified
- */
+/** Type alias for {@link StateJSONv1} stringified */
 export type StateString = string
 
 /**
  * Copies
+ *
  * @param gateList
  * @returns
  */
@@ -29,8 +27,7 @@ export function copy(gateList: Gate<any, any>[], wireList: Wire[]): StateString 
 		const connectorID = parentGate.dots.indexOf(dot)
 		const parentID = reverse.get(parentGate)
 		if (parentID === undefined) {
-
-			console.error({rev: [...reverse][0][0].position.vec, gate :parentGate.position.vec})
+			console.error({ rev: [...reverse][0][0].position.vec, gate: parentGate.position.vec })
 			throw new Error(`Parent ID not working`)
 		}
 		return [parentID, connectorID]
@@ -69,8 +66,6 @@ export function paste(tplStr: StateString, offset = new Vec()) {
 		return value
 	}) as StateJSONv1
 
-	
-
 	const newGates = tpl.gates.map(({ template, position }) => {
 		const vec = Vec.fromArr(position)
 		if (typeof template === 'string') {
@@ -91,10 +86,3 @@ export function paste(tplStr: StateString, offset = new Vec()) {
 
 	return newGates
 }
-
-// @ts-expect-error
-globalThis.copy = copy
-// @ts-expect-error
-globalThis.paste = paste
-// @ts-expect-error
-globalThis.getAllGates = () => [...State.pieces].filter((r) => r instanceof Gate)

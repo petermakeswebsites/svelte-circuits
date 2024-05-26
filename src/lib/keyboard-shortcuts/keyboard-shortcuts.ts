@@ -1,37 +1,25 @@
 import { runActionOnSelected, selectAll } from '$lib/selecting/selectable.svelte'
 import { StateHistory } from '$lib/state/history.svelte'
 import { Help } from '../../components/HelpView.svelte'
+import { Hotkeys } from '$lib/utils/hotkeys.svelte'
 
-globalThis.addEventListener('keydown', function (event) {
-	switch (event.key) {
-		case 'Delete':
-		case 'Backspace':
-			runActionOnSelected('delete')
-			break
-		case 'ArrowLeft':
-		case 'ArrowRight':
-		case 'ArrowUp':
-		case 'ArrowDown':
-			runActionOnSelected("key", [event.key, event.shiftKey])
-			break
-		case 'a':
-			if (event.metaKey || event.ctrlKey) {
-				selectAll()
-			}
-			break
-		case 'h':
-			Help.toggle()
-			break
-		case 'z':
-			if (event.metaKey || event.ctrlKey) {
-				event.shiftKey
-				event.preventDefault()
-				if (event.shiftKey) {
-					StateHistory.redo()
-				} else {
-					StateHistory.undo()
-				}
-			}
-			break
+Hotkeys.add(['Delete', 'Backspace'], () => runActionOnSelected('delete'))
+
+Hotkeys.add(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'] as const, ({ key }) => {
+	runActionOnSelected('key', [key, Hotkeys.shiftKeyDown])
+})
+
+Hotkeys.add('a', () => Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown || selectAll())
+
+Hotkeys.add('h', () => Help.toggle())
+
+Hotkeys.add('z', (e) => {
+	if (Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown) {
+		e.preventDefault()
+		if (Hotkeys.shiftKeyDown) {
+			StateHistory.redo()
+		} else {
+			StateHistory.undo()
+		}
 	}
 })

@@ -1,6 +1,5 @@
 import { Templates } from "../logic-gates/templates"
 import State from "../state/state.svelte"
-import { Switcher } from "../logic-gates/switcher.svelte"
 import { Wire } from "../wire/wire.svelte"
 import { Gate } from "../logic-gates/gate.svelte"
 import { Vec } from "$lib/position/vec"
