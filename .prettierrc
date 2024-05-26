@@ -4,6 +4,7 @@
 	"trailingComma": "none",
 	"printWidth": 140,
 	"jsdocPrintWidth": 80,
+	"tabWidth": 2,
 	"semi": false,
 	"plugins": ["prettier-plugin-svelte", "prettier-plugin-jsdoc","./node_modules/prettier-plugin-jsdoc/dist/index.js"],
 	"overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
