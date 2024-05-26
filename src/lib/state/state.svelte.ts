@@ -3,7 +3,7 @@ import type { Dot } from '$lib/connections/dot.svelte'
 import type { Gate } from '$lib/logic-gates/gate.svelte'
 import { Wire } from '$lib/wire/wire.svelte'
 import { StateHistory } from './history.svelte'
-import { Playback } from '$lib/state/pulse.svelte'
+import { Pulse } from '$lib/state/pulse.svelte'
 import { FrameRunner } from '$lib/utils/frame-runner'
 
 export type Piece = Gate<any, any>
@@ -13,24 +13,27 @@ const State = new (class {
 	all = $derived(new StateSet([...this.wires, ...this.pieces]))
 	connectors = $derived([...this.pieces].flatMap((piece) => piece.dots).map((dot) => dot.connector))
 
-	stateFrameRunner = new FrameRunner()
+	/**
+	 * The function passed to {@link Pulse} every time there is a change in state.
+	 * This is generally buffered in some async way, so we need to be careful that
+	 * the data is universally true no matter when its called
+	 */
+	pulseFn() {
+		let changed = false
+		for (const connector of this.connectors) {
+			const unchanged = connector.calculateEmittance()
+			if (!unchanged) changed = true
+		}
+		for (const connector of this.connectors) {
+			connector.setEmittance()
+		}
+		if (changed) {
+			this.queueNextPulse()
+		}
+	}
 
 	queueNextPulse() {
-		this.stateFrameRunner.replaceFrame(() => {
-			Playback.setNextPulse(() => {
-				let changed = false
-				for (const connector of this.connectors) {
-					const unchanged = connector.calculateEmittance()
-					if (!unchanged) changed = true
-				}
-				for (const connector of this.connectors) {
-					connector.setEmittance()
-				}
-				if (changed) {
-					this.queueNextPulse()
-				}
-			})
-		})
+		Pulse.setNextPulse(() => this.pulseFn())
 	}
 
 	triggerChangeState() {

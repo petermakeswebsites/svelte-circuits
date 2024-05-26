@@ -1,6 +1,7 @@
 <script lang="ts" context="module">
 	export const Help = new (class {
-		open = $state(true)
+		open = $state(false)
+
 		toggle() {
 			this.open = !this.open
 		}
@@ -20,11 +21,7 @@
 		{ tags: ['command', 'z'], desc: 'Undo' },
 		{ tags: ['command', 'shift', 'z'], desc: 'Redo' },
 		{ tags: ['h'], desc: 'Toggle Help' }
-        
 	] satisfies HelpShortcut[]
-
-    
-    
 </script>
 
 <script lang="ts">
@@ -39,8 +36,8 @@
 			<table>
 				<thead>
 					<tr>
-						<td> Shortcut </td>
-						<td>Action </td>
+						<td> Shortcut</td>
+						<td>Action</td>
 					</tr>
 				</thead>
 				<tbody>
@@ -81,30 +78,30 @@
 		height: 100%;
 	}
 
-    table {
-        border-collapse: collapse;
-    }
+	table {
+		border-collapse: collapse;
+	}
 
-    thead {
-        font-weight: bold;
-        background-color: #00f1;
-    }
+	thead {
+		font-weight: bold;
+		background-color: #00f1;
+	}
 
-    tbody tr {
-        border-top: 1px solid black;
-    }
+	tbody tr {
+		border-top: 1px solid black;
+	}
 
-    td {
-        padding: 0.5em;
-        /* height: 2em; */
-    }
+	td {
+		padding: 0.5em;
+		/* height: 2em; */
+	}
 
-    tbody tr:nth-child(2n) {
-        background: #00000009;
-    }
+	tbody tr:nth-child(2n) {
+		background: #00000009;
+	}
 
 	.table-tag {
 		padding-right: 1em;
-        text-align: right;
+		text-align: right;
 	}
 </style>

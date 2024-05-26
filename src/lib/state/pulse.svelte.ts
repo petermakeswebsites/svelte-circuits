@@ -1,46 +1,47 @@
-export const Playback = new (class {
-	#nextPulse = $state<(() => void) | undefined>()
+import { FrameRunner } from '$lib/utils/frame-runner'
 
+export const Pulse = new (class {
+	#nextPulse = $state<(() => void) | undefined>()
+	readyForNextPulse = $derived(!!this.#nextPulse)
+	stateFrameRunner = new FrameRunner()
+
+	/**
+	 * Note that the function being sent may never run. The pulse will only ever
+	 * run the latest function at the next frame.
+	 *
+	 * @param fn
+	 */
 	setNextPulse(fn: () => void) {
 		this.#nextPulse = fn
-		console.log("Ready for state change!", {fn: () => this.runNextPulse()})
+		console.log('setting another pulse')
+		if (this.playing) this.runNextPulse()
 	}
 
 	runNextPulse() {
 		const pulseFn = this.#nextPulse
 		this.#nextPulse = undefined
-		if (!pulseFn) throw new Error(`No pulse found`)
-		pulseFn()
+		if (!pulseFn) throw new Error(`No pending pulse found`)
+		this.stateFrameRunner.replaceFrame(pulseFn)
 	}
 
-	playing = true
-	stop() {}
-	start() {}
-	reset() {}
+	playing = $state(false)
 
-	// HZ = 5
-	// #timeout = -1
-	// startLoop() {
-	//     pulse()
-	//     this.#timeout = setTimeout(() => this.startLoop(), 1000/this.HZ)
-	// }
-	//
-	// playing = $state(true)
-	// stop() {
-	//     this.playing = false
-	//     clearTimeout(this.#timeout)
-	// }
-	//
-	// start() {
-	//     clearTimeout(this.#timeout)
-	//     this.startLoop()
-	//     this.playing = true
-	// }
+	stop() {
+		this.playing = false
+	}
 
-	constructor() {
-		// this.startLoop()
+	start() {
+		if (this.playing) return
+		this.playing = true
+		new Promise((res) => setTimeout(res, 0)).then(() => {
+			if (this.#nextPulse) this.runNextPulse()
+		})
+	}
+
+	step() {
+		this.#nextPulse?.()
 	}
 })()
 
 // @ts-expect-error
-window.pulse = () => Playback.runNextPulse()
+window.pulse = Pulse

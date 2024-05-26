@@ -3,13 +3,11 @@ import { Selectable } from '$lib/selecting/selectable.svelte'
 import State from '$lib/state/state.svelte'
 
 export class Wire {
-	name: string
-	from = $state<Dot>()!
-	to = $state<Dot>()!
-	/**
-	 *
-	 * @throws
-	 */
+	readonly name: string
+	readonly from: Dot
+	readonly to: Dot
+
+	/** @throws */
 	constructor({ name = '', from, to }: { name?: string; from: Dot; to: Dot }) {
 		this.name = name
 		this.from = from
@@ -19,7 +17,11 @@ export class Wire {
 		}
 	}
 
-	bodyLive = $derived(this.from.connector.isLive && this.to.connector.isLive)
+	/** Whether the actual wire is live */
+	get bodyLive() {
+		// To and from are on the same cluster, so we only need to check one
+		return this.from.connector.isLive
+	}
 
 	readonly selectable = new Selectable({
 		delete: () => {
@@ -29,8 +31,9 @@ export class Wire {
 
 	/**
 	 * Is this wire connected to the dot in question?
+	 *
 	 * @param dot
-	 * @returns null if nothing, or {@link Dot} of the other end
+	 * @returns Null if nothing, or {@link Dot} of the other end
 	 */
 	isConnectedTo(dot: Dot): Dot | null {
 		return this.from == dot ? this.to : this.to == dot ? this.from : null
