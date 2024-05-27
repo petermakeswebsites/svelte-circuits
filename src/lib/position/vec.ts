@@ -1,6 +1,4 @@
-/**
- * Immutable location
- */
+/** Immutable location vector */
 export class Vec extends Array<number> {
 	get x() {
 		return this[0]
@@ -48,8 +46,9 @@ export class Vec extends Array<number> {
 	}
 
 	/**
-	 * If this is inside of that. Or if all components of this are less than
-	 * that. Doesn't measure magnitude.
+	 * If this is inside of that. Or if all components of this are less than that.
+	 * Doesn't measure magnitude.
+	 *
 	 * @param that
 	 * @returns
 	 */
@@ -61,6 +60,7 @@ export class Vec extends Array<number> {
 	 * If this is outside of that. Or if all components of this are more than
 	 * that. Doesn't measure magnitude. It's not the opposite of
 	 * {@link Vec.lessThan} if you think about it. It's to do with quadrants.
+	 *
 	 * @param that
 	 * @returns
 	 */
@@ -74,6 +74,7 @@ export class Vec extends Array<number> {
 
 	/**
 	 * Subtract {@link that} from "this", or `this - that`
+	 *
 	 * @param that
 	 */
 	subtract(that: Vec) {
@@ -106,6 +107,3 @@ export type VecSerialised = readonly [x: number, y: number]
 function snap(value: number, multiple: number): number {
 	return Math.round(value / multiple) * multiple
 }
-
-// @ts-expect-error
-globalThis.Vec = Vec

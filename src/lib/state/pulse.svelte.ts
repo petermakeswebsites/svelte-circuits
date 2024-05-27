@@ -1,5 +1,7 @@
 import { FrameRunner } from '$lib/utils/frame-runner'
 
+const START_PLAYING = true
+
 export const Pulse = new (class {
 	#nextPulse = $state<(() => void) | undefined>()
 	readyForNextPulse = $derived(!!this.#nextPulse)
@@ -13,7 +15,6 @@ export const Pulse = new (class {
 	 */
 	setNextPulse(fn: () => void) {
 		this.#nextPulse = fn
-		console.log('setting another pulse')
 		if (this.playing) this.runNextPulse()
 	}
 
@@ -24,7 +25,7 @@ export const Pulse = new (class {
 		this.stateFrameRunner.replaceFrame(pulseFn)
 	}
 
-	playing = $state(false)
+	playing = $state(START_PLAYING)
 
 	stop() {
 		this.playing = false
@@ -33,9 +34,7 @@ export const Pulse = new (class {
 	start() {
 		if (this.playing) return
 		this.playing = true
-		new Promise((res) => setTimeout(res, 0)).then(() => {
-			if (this.#nextPulse) this.runNextPulse()
-		})
+		if (this.#nextPulse) this.runNextPulse()
 	}
 
 	step() {

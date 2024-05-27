@@ -6,7 +6,7 @@ import { Connector } from './connector.svelte'
 import { StubDirection } from './stub'
 
 /**
- * The Dot is a higher level abstraction of a connector. It contains connection,
+ * The Dot is a higher level abstraction of a {@link Connector}. It contains connection,
  * location and view information.
  */
 export class Dot {

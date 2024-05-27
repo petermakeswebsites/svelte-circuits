@@ -1,3 +1,4 @@
+/** @file This is what allows us to store the gate's logic */
 import type { NumericRange, TupleType } from '../utils/type-helpers'
 
 type BooleanTuple<T extends number> = TupleType<T, boolean>
@@ -5,10 +6,11 @@ type BooleanTuple<T extends number> = TupleType<T, boolean>
 export type Formula<T extends number> = And<T> | Or<T> | Not<T>
 export type Evaluation<T extends number> = Formula<T> | NumericRange<T> | boolean
 
+/** Allowed operations for the formula object */
 export enum FormulaOperation {
-	NOT = "!",
-	AND = "&",
-	OR = "|",
+	NOT = '!',
+	AND = '&',
+	OR = '|'
 }
 
 type And<T extends number> = {
@@ -32,10 +34,15 @@ function isFormula<T extends number>(evaluation: Evaluation<T>): evaluation is F
 	return !(typeof evaluation === 'number' || typeof evaluation === 'boolean')
 }
 
-function isIndex<T extends number>(evaluation : NumericRange<T> | boolean) : evaluation is NumericRange<T> {
-    return typeof evaluation === 'number'
+function isIndex<T extends number>(evaluation: NumericRange<T> | boolean): evaluation is NumericRange<T> {
+	return typeof evaluation === 'number'
 }
 
+/**
+ * Generates a JS function from the logical {@link Evalution} blocks.
+ *
+ * @param evaluation
+ */
 export function createEvaluation<T extends number>(evaluation: Evaluation<T>): (...args: BooleanTuple<T>) => boolean {
 	if (isFormula(evaluation)) {
 		switch (evaluation.op) {
@@ -52,7 +59,7 @@ export function createEvaluation<T extends number>(evaluation: Evaluation<T>): (
 		}
 	} else {
 		if (isIndex(evaluation)) {
-			// @ts-expect-error stack trace, it's fine
+			// @ts-expect-error stack depth error for type system, it's fine
 			return (...args: BooleanTuple<T>) => args[evaluation]
 		} else {
 			return (...args) => evaluation

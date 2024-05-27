@@ -10,10 +10,9 @@ import State from './state.svelte'
 export type StateString = string
 
 /**
- * Copies
  *
  * @param gateList
- * @returns
+ * @param wireList
  */
 export function copy(gateList: Gate<any, any>[], wireList: Wire[]): StateString {
 	const reverse = new Map(gateList.map((gate, id) => [gate, id]))

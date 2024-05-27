@@ -35,9 +35,9 @@ export class Connector {
 	 */
 	isLive = $derived.by(() => {
 		const cluster = Clusters.map.get(this)
-		if (!cluster) {
-			return false
-		}
+		console.log("is there a cluster?", !!cluster)
+		if (!cluster) return false
+		console.log("is it live??", cluster.isLive)
 		return cluster.isLive
 	})
 
@@ -70,6 +70,9 @@ export class Connector {
 			this.intrinsicConnections.add(connector)
 			connector.intrinsicConnections.add(this)
 		})
+
+		// Run the first emittance calculation
+		// this.calculateEmittance()
 	}
 
 	/**
@@ -92,12 +95,17 @@ export class Connector {
 	 */
 	calculateEmittance() {
 		const lastEmittance = this.#calculatedEmittance
-		const currentEmittance = this.#emitterFn()
-		this.#calculatedEmittance = currentEmittance
+		this.#calculatedEmittance = this.#emitterFn()
 		return lastEmittance === this.#calculatedEmittance
 	}
 
+	/**
+	 * After all the connectors have been calculated by {@link State} and
+	 * {@link Pulse}, we can bake the new emitting values so that the lives can
+	 * propagate
+	 */
 	setEmittance() {
+		console.log("setting emittance")
 		this.isEmitting = this.#calculatedEmittance
 	}
 
@@ -107,10 +115,7 @@ export class Connector {
 	 */
 	isEmitting = $state(false)
 
-	/**
-	 * Destroys all connections to and from this connector. Also removes from
-	 * {@link globalConnectorList}.
-	 */
+	/** Destroys all connections to and from this connector */
 	destroy() {
 		for (const connector of this.intrinsicConnections) {
 			this.intrinsicConnections.delete(connector)

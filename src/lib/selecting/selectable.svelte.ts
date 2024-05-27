@@ -143,7 +143,7 @@ const selectedArrayAll = $derived(new Set([...Selected.list, ...SelectionBox.sel
 const selectedGatesOnly = $derived.by(() => {
 	const newArr: Gate<any, any>[] = []
 	for (const selected of selectedArrayAll) {
-		if (selected instanceof Draggable && selected.parent instanceof Gate) {
+		if (selected instanceof Draggable) {
 			newArr.push(selected.parent)
 		}
 	}
@@ -211,8 +211,8 @@ export class Selectable {
 
 export class Draggable extends Selectable {
 	readonly associatedPosition: Position
-	readonly parent: Gate<any, any> | Switcher
-	constructor(actions: Actions = {}, associatedPosition: Position, parent: Gate<any, any> | Switcher) {
+	readonly parent: Gate<any, any>
+	constructor(actions: Actions = {}, associatedPosition: Position, parent: Gate<any, any>) {
 		super(actions)
 		this.associatedPosition = associatedPosition
 		this.parent = parent

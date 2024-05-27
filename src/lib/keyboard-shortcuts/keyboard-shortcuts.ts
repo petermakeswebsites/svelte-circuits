@@ -9,7 +9,7 @@ Hotkeys.add(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'] as const, ({ key
 	runActionOnSelected('key', [key, Hotkeys.shiftKeyDown])
 })
 
-Hotkeys.add('a', () => Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown || selectAll())
+Hotkeys.add('a', () => (Hotkeys.metaKeyDown || Hotkeys.ctrlKeyDown) && selectAll())
 
 Hotkeys.add('h', () => Help.toggle())
 

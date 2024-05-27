@@ -2,6 +2,7 @@ import type { Connector } from './connector.svelte'
 import type { Dot } from './dot.svelte'
 import State from '$lib/state/state.svelte'
 import { findClusters } from '$lib/connections/clustering-algo'
+import { some } from '$lib/utils/rune-every'
 /**
  * So there's a tricky thing here where the state of the dots (whether they are
  * live or not) depend on there are any "emitters" in their cluster. And whether
@@ -37,23 +38,11 @@ export const Clusters = new (class {
  */
 export class Cluster {
 	/**
-	 * Dots in the cluster Does not need to be reactive because the cluster list
-	 * is regenerated every time there is a change
+	 * Dots in the cluster do not need to be reactive because the cluster list is
+	 * regenerated every time there is a change
 	 */
 	readonly dots = new Set<Dot>()
+
 	/** Cached state representing whether the cluster is on or off */
-	isLive = $derived.by(() => {
-		let live = false
-
-		for (const dot of this.dots) {
-			if (dot.connector.isEmitting) {
-				live = true
-			}
-		}
-
-		return live
-	})
+	isLive = $derived(some([...this.dots], (dot) => dot.connector.isEmitting))
 }
-
-// @ts-expect-error
-window.clusters = Clusters

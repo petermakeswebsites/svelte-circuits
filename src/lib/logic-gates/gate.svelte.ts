@@ -8,6 +8,7 @@ import State from '$lib/state/state.svelte'
 import { every } from '$lib/utils/rune-every'
 import { type TupleType, lengthMap, type NumericRange } from '$lib/utils/type-helpers'
 import { type Evaluation, createEvaluation } from './gate-formula'
+import { isTemplate, type Templates } from './templates'
 
 /**
  * Essentially the template for a gate. You can actually create your own gates
@@ -25,7 +26,7 @@ export type GateConstructor<T extends number, R extends number> = {
 	/** Whether it does anything or is just a dead picture */
 	dummy: boolean
 	/** Name of the gate to save serialisation space * */
-	template?: string
+	template?: keyof typeof Templates
 	/** Inputs of gate */
 	inputs: TupleType<
 		T,
@@ -56,9 +57,15 @@ export type GateConstructor<T extends number, R extends number> = {
 	>
 }
 
+/**
+ * Gates are the main body of any logical operator. They contain view data like
+ * SVG path, as well as amount of inputs, outputs, and under what conditions the
+ * outputs should change
+ */
 export class Gate<T extends number, R extends number> {
 	inputs = $state<TupleType<T, Dot>>()! // assigned in constructor
 	outputs = $state<TupleType<R, Dot>>()! // assigned in constructor
+
 	getInput(num: NumericRange<T>) {
 		return this.inputs[num]
 	}
@@ -67,18 +74,22 @@ export class Gate<T extends number, R extends number> {
 		return this.outputs[num]
 	}
 
+	/**
+	 * Whether this particular gate is a dummy, maybe used only for display
+	 * purposes and not functional
+	 */
 	readonly dummy
+	/** The bounding box of the Gate */
 	box: Box
+	/** Position of the gate on the SVG */
 	position: Position
+	/** Name of the gate for debugging purposes */
 	name: string
-	readonly template: string | GateConstructor<T, R>
+	/** To save memory, default gates are referred to using templates */
+	readonly template: keyof typeof Templates | GateConstructor<T, R>
 
 	constructor(gate: GateConstructor<T, R>) {
-		if (gate.template) {
-			this.template = gate.template
-		} else {
-			this.template = gate
-		}
+		this.template = gate.template ? gate.template : gate
 		this.dummy = gate.dummy
 		this.name = gate.name
 		this.position = new Position(gate.vec)
@@ -111,16 +122,23 @@ export class Gate<T extends number, R extends number> {
 		)
 	}
 
+	/** Return a list of all input and output {@link Dot}s */
 	get dots() {
 		return [...this.inputs, ...this.outputs]
 	}
 
-	bodyLive = $derived(every(this.outputs, (output) => output.connector.isEmitting))
+	/** Whether the body is actually live or not */
+	get bodyLive() {
+		return every(this.outputs, (output) => output.connector.isEmitting)
+	}
 
+	/** SVG paths that draw out the gate's shape */
 	readonly paths: string[]
 
+	/** API that allows the gate to be selected, moved, and dragged */
 	readonly selectable
 
+	/** Destroy the dot by destroying all the dots connected to the gate */
 	destroy() {
 		for (const dot of this.dots) {
 			dot.destroy()
@@ -168,6 +186,7 @@ export function createGateTemplateMaker<T extends number, R extends number>(
 	const box = serialised.box || Box.centre(new Vec(50, 50)).centre().toArr()
 
 	return ({ vec, name, dummy = false }: { vec: Vec; name: string; dummy?: boolean }) => {
+		if (!isTemplate(serialised.template)) throw new Error(`Template ${serialised.template} is was not found in the template list`)
 		const gateConstructor: GateConstructor<T, R> = {
 			inputs,
 			outputs,

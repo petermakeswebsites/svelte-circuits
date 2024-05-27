@@ -38,9 +38,14 @@ function generateTwoInOneOut(template: string, paths: string[], emittingFn: Eval
 const AndPath = 'M -20 -15 l 25 0 c 20 0 20 30 0 30 l -25 0 l 0 -30'
 const OrPath = 'M -23 -15 l 14 0 c 21 0 28 15 28 15 c 0 0 -7 15 -28 15 l -14 0 c 7 -8 7 -22 0 -30'
 const OrCurve = 'M -27 15 c 7 -8 7 -22 0 -30'
-const not = (x: number = 20, y: number = 0) => `M ${x} ${y} a 1 1 0 0 0 10 0 a 1 1 0 0 0 -10 0`
 const buffer = 'M -20 0 l 0 15 l 30 -15 l -30 -15 l 0 15'
 
+/** Creates a little not circle */
+const not = (x: number = 20, y: number = 0) => `M ${x} ${y} a 1 1 0 0 0 10 0 a 1 1 0 0 0 -10 0`
+
+/**
+ * List of global default templates
+ */
 export const Templates = {
 	and: generateTwoInOneOut('and', [AndPath], {
 		op: FormulaOperation.AND,
@@ -191,4 +196,13 @@ export const Templates = {
 		inputs: [] as const,
 		paths: []
 	})
+} as const
+
+/**
+ * Checks to see whether the string is an appropriate template string
+ *
+ * @param tpl
+ */
+export function isTemplate(tpl: any): tpl is keyof typeof Templates {
+	return tpl in Templates
 }

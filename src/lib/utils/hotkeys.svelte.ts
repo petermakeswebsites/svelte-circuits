@@ -1,7 +1,7 @@
 import { Set as StateSet } from 'svelte/reactivity'
 import type { KeyboardEventKey } from 'keyboard-event-key-type'
 
-type HotkeyFn<T extends KeyboardEventKey[] = KeyboardEventKey[]> = (e: KeyboardEvent & { key: T[number] }) => void
+type HotkeyFn<T extends KeyboardEventKey[] = KeyboardEventKey[], Q = any> = (e: KeyboardEvent & { key: T[number] }) => Q
 
 export const Hotkeys = new (class {
 	readonly currentlyDown = new StateSet<KeyboardEventKey>()
