@@ -82,8 +82,7 @@ export function dragger<T>(
 
 		// This is when the true beginning actually fires
 		if (beginReset) {
-			const rtn = beginFn?.(transformedEvtVec, element)
-			extra = rtn
+			extra = beginFn?.(transformedEvtVec, element)
 			beginReset = false
 		}
 
