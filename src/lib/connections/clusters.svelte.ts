@@ -34,7 +34,8 @@ export const Clusters = new (class {
  * The cluster is an ephemeral transient class that is created and destroyed
  * whenever there is a structural or connection change. Clusters offer a
  * convenient API, for example since everything in a cluster shares the same
- * status (on/off), we can ping the cluster directly
+ * status (on/off), we can ping the cluster directly. They are a functional
+ * abstraction based on the configuration of nodes & wires.
  */
 export class Cluster {
 	/**

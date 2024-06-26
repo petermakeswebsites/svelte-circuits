@@ -35,9 +35,7 @@ export class Connector {
 	 */
 	isLive = $derived.by(() => {
 		const cluster = Clusters.map.get(this)
-		console.log("is there a cluster?", !!cluster)
 		if (!cluster) return false
-		console.log("is it live??", cluster.isLive)
 		return cluster.isLive
 	})
 
