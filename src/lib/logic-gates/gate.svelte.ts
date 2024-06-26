@@ -5,7 +5,6 @@ import { Vec, type VecSerialised } from '$lib/position/vec'
 import { Box, type BoxSerialised } from '$lib/selecting/box'
 import { Draggable, setupKeyDrag } from '$lib/selecting/selectable.svelte'
 import State from '$lib/state/state.svelte'
-import { every } from '$lib/utils/rune-every'
 import { type TupleType, lengthMap, type NumericRange } from '$lib/utils/type-helpers'
 import { type Evaluation, createEvaluation } from './gate-formula'
 import { isTemplate, type Templates } from './templates'
@@ -129,7 +128,7 @@ export class Gate<T extends number, R extends number> {
 
 	/** Whether the body is actually live or not */
 	get bodyLive() {
-		return every(this.outputs, (output) => output.connector.isEmitting)
+		return this.outputs.every((output) => output.connector.isEmitting)
 	}
 
 	/** SVG paths that draw out the gate's shape */

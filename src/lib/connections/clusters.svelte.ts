@@ -2,7 +2,6 @@ import type { Connector } from './connector.svelte'
 import type { Dot } from './dot.svelte'
 import State from '$lib/state/state.svelte'
 import { findClusters } from '$lib/connections/clustering-algo'
-import { some } from '$lib/utils/rune-every'
 /**
  * So there's a tricky thing here where the state of the dots (whether they are
  * live or not) depend on there are any "emitters" in their cluster. And whether
@@ -45,5 +44,5 @@ export class Cluster {
 	readonly dots = new Set<Dot>()
 
 	/** Cached state representing whether the cluster is on or off */
-	isLive = $derived(some([...this.dots], (dot) => dot.connector.isEmitting))
+	isLive = $derived([...this.dots].some((dot) => dot.connector.isEmitting))
 }
