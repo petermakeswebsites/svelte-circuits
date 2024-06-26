@@ -10,14 +10,10 @@
 	import type { GateConstructor } from '$lib/logic-gates/gate.svelte'
 
 	let { gateConstructor, onDrop }: { gateConstructor: GateConstructor<any, any>; onDrop: (position: Position) => void } = $props()
-
-	let { box, paths, vec, inputs, outputs } = $derived(gateConstructor)
-
-	// $inspect(gate.bodyLive)
+	let { box, paths, vec, inputs, outputs } = gateConstructor
 </script>
 
 <Group pos={vec}>
-	<!-- <Text x={0} y={-10} fontSize="13px">AND</Text> -->
 	<g
 		use:dragger={{
 			begin: () => onDrop(new Position(vec)),
