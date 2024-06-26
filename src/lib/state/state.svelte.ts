@@ -4,7 +4,6 @@ import type { Gate } from '$lib/logic-gates/gate.svelte'
 import { Wire } from '$lib/wire/wire.svelte'
 import { StateHistory } from './history.svelte'
 import { Pulse } from '$lib/state/pulse.svelte'
-import { FrameRunner } from '$lib/utils/frame-runner'
 
 export type Piece = Gate<any, any>
 const State = new (class {

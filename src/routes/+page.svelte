@@ -12,7 +12,7 @@
 	import State from '$lib/state/state.svelte'
 	import { linePath } from '$lib/utils/svg-helpers'
 	import { Vec } from '$lib/position/vec'
-	import { ZoomScroll } from '$lib/view-navigation.ts/scroll-zoom.svelte'
+	import { ZoomScroll } from '$lib/view-navigation/scroll-zoom.svelte'
 	import Clipboard from '../components/Clipboard.svelte'
 	import PanScreen from '../components/PanScreen.svelte'
 	import HelpView from '../components/HelpView.svelte'

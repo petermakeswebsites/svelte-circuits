@@ -1,5 +1,5 @@
 import { Vec } from '$lib/position/vec'
-import { ZoomScroll } from '$lib/view-navigation.ts/scroll-zoom.svelte'
+import { ZoomScroll } from '$lib/view-navigation/scroll-zoom.svelte'
 
 const LONG_TAP_MS = 400
 

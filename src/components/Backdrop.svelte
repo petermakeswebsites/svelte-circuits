@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { dragger } from '$lib/selecting/dragger.svelte'
 	import { Selected, SelectionBox } from '$lib/selecting/selectable.svelte'
-	import { ZoomScroll } from '$lib/view-navigation.ts/scroll-zoom.svelte'
+	import { ZoomScroll } from '$lib/view-navigation/scroll-zoom.svelte'
 	import Rect from './Rect.svelte'
 </script>
 
