@@ -27,7 +27,6 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition'
 	import TagMaker from './TagMaker.svelte'
-	import type { TagName } from './TagView.svelte'
 </script>
 
 {#if Help.open}

@@ -3,6 +3,11 @@ import type { KeyboardEventKey } from 'keyboard-event-key-type'
 
 type HotkeyFn<T extends KeyboardEventKey[] = KeyboardEventKey[], Q = any> = (e: KeyboardEvent & { key: T[number] }) => Q
 
+/**
+ * Makes exposing certain hotkeys easier for the front-end.
+ *
+ * EXPLAIN!
+ */
 export const Hotkeys = new (class {
 	readonly currentlyDown = new StateSet<KeyboardEventKey>()
 

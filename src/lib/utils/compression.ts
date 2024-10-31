@@ -9,8 +9,8 @@ async function compressData(inputText : string) {
 
     const chunks = [];
     const reader = compressedStream.readable.getReader();
-    let result;
 
+    let result;
     while (!(result = await reader.read()).done) {
         chunks.push(result.value);
     }

@@ -57,12 +57,10 @@ export const StateHistory = new (class {
 
 	async undo() {
 		clearTimeout(this.#timeout)
-		if (this.#disableSaving) {
-			console.log('Undo in progress')
-			return
-		}
 
-		console.log('undo')
+		// Is undo in progress?
+		if (this.#disableSaving) return
+
 		const prevNode = this.#ptr?.previousNode
 		if (prevNode) {
 			this.changePtr(prevNode)
