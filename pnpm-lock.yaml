@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      jsdoc-signals-plugin:
+        specifier: ^0.0.1
+        version: 0.0.1
       keyboard-event-key-type:
         specifier: ^1.5.0
         version: 1.5.0
@@ -637,6 +640,9 @@ packages:
 
   js-tokens@9.0.0:
     resolution: {integrity: sha512-WriZw1luRMlmV3LGJaR6QOJjWwgLUTf89OwT2lUOyjX2dJGBwgmIkbcz+7WFZjrZM635JOIR517++e/67CP9dQ==}
+
+  jsdoc-signals-plugin@0.0.1:
+    resolution: {integrity: sha512-oIoATQk/9fkZ7okq2fUGOX+tVxIpFgSf5DVR12t7ajZdzSMORpfvemEf/WWLAfjLduymGNH6fI8NWep134PT0g==}
 
   keyboard-event-key-type@1.5.0:
     resolution: {integrity: sha512-d/yMrq4BREH4isBf/Tj8aQqxP+zudhsfeA91nRVllvkxvGsM5IJVgCiQtZQ+qhM1mpZY3kAjoneUIXRvdABEWw==}
@@ -1635,6 +1641,8 @@ snapshots:
   isexe@2.0.0: {}
 
   js-tokens@9.0.0: {}
+
+  jsdoc-signals-plugin@0.0.1: {}
 
   keyboard-event-key-type@1.5.0: {}
 
